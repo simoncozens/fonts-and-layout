@@ -1,0 +1,62 @@
+A Brief History of Type
+=======================
+
+## Pre-digital type
+## Pre-TT/OT Fonts
+## TT / OT / GX / etc. & OT consolidation
+
+Font Concepts
+=============
+
+## Dimensions
+## Sidebearings and kerns
+
+Unicode
+=======
+
+## Pre-Unicode encodings
+
+How OpenType Works
+==================
+
+## Tables
+## The feature language
+
+Common OpenType Features
+========================
+
+## Kerns
+## Ligatures
+## Small caps
+## Fractions
+## Stylistic Alternates
+## Contextual Alternates
+## Positioning
+
+Font localisation
+=================
+
+## Serbian be
+## Polish Kreska
+## Navajo Ogonek
+
+Advanced Feature programming
+============================
+
+## Randomization
+
+Layout Challenges
+=================
+
+## Bidirectionality
+## Arabic connection
+
+OpenType for Programmers: freetype2
+===================================
+
+Text Layout for Programmers: Harfbuzz
+=====================================
+
+Text Layout for Programmers: libraqm
+====================================
+
