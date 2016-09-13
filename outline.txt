@@ -11,20 +11,24 @@ Font Concepts
 ## Characters and glyphs
 ## Dimensions
 ## Sidebearings and kerns
-## Hinting
+## Font formats
 ## Editing tools
 
 Unicode
 =======
 
 ## Pre-Unicode encodings
-## Decomposition
+## The Unicode standard : history, organisation, etc.
+## Unicode Encodings
 ## Character properties
+## Case conversion
+## Normalization and decomposition
 
 How OpenType Works
 ==================
 
 ## Tables
+## Features, lookups and rules
 ## The feature language
 ## Tools
 ## How features are encoded
@@ -35,7 +39,7 @@ Common OpenType Features
 ## Kerns
 ## Ligatures
 ## Small caps
-## Fractions
+## Superscript / Subscript
 ## Stylistic Alternates
 ## Contextual Alternates
 ## Positioning
@@ -50,6 +54,8 @@ Font localisation
 Advanced Feature programming
 ============================
 
+## Boundary detection
+## Fractions (see Nutso)
 ## Randomization
 
 Layout Challenges
@@ -57,6 +63,9 @@ Layout Challenges
 
 ## Bidirectionality
 ## Arabic connection
+
+Rasterisation and Hinting
+=========================
 
 Fonts on the web
 ================
