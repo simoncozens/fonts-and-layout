@@ -8,19 +8,26 @@ A Brief History of Type
 Font Concepts
 =============
 
+## Characters and glyphs
 ## Dimensions
 ## Sidebearings and kerns
+## Hinting
+## Editing tools
 
 Unicode
 =======
 
 ## Pre-Unicode encodings
+## Decomposition
+## Character properties
 
 How OpenType Works
 ==================
 
 ## Tables
 ## The feature language
+## Tools
+## How features are encoded
 
 Common OpenType Features
 ========================
@@ -50,6 +57,9 @@ Layout Challenges
 
 ## Bidirectionality
 ## Arabic connection
+
+Fonts on the web
+================
 
 OpenType for Programmers: freetype2
 ===================================
