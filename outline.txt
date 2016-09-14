@@ -4,13 +4,13 @@ A Brief History of Type
 ## Pre-digital type
 ## Pre-TT/OT Fonts
 ## TT / OT / GX / etc. & OT consolidation
+## Variable fonts
 
 Font Concepts
 =============
 
 ## Characters and glyphs
-## Dimensions
-## Sidebearings and kerns
+## Dimensions, sidebearings and kerns
 ## Font formats
 ## Editing tools
 
@@ -32,6 +32,7 @@ How OpenType Works
 ## The feature language
 ## Tools
 ## How features are encoded
+## Font variations
 
 Common OpenType Features
 ========================
