@@ -47,9 +47,11 @@ Common OpenType Features
 Font localisation
 =================
 
+## Turkish i
 ## Serbian be
 ## Polish Kreska
 ## Navajo Ogonek
+## Arabic, Urdu and Sindhi
 
 Advanced Feature programming
 ============================
