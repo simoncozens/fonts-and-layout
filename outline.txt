@@ -24,14 +24,18 @@ Unicode
 ## Character properties
 ## Case conversion
 ## Normalization and decomposition
+## ICU
 
 How OpenType Works
 ==================
 
-## Tables
+## What is an OpenType font? (Tables)
+### FontTools (ttx)
+
+XXX How do make this functional and task-driven rather than abstract?
+
 ## Features, lookups and rules
 ## The feature language
-## Tools
 ## How features are encoded
 ## Color fonts
 ## Font variations
@@ -68,6 +72,9 @@ Layout Challenges
 
 ## Bidirectionality
 ## Arabic connection
+## Line breaking & word detection
+### CJK
+### South Asian scripts
 
 Rasterisation and Hinting
 =========================
