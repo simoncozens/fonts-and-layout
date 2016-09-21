@@ -1,7 +1,19 @@
 How OpenType Works
 ==================
 
+They say that if you enjoy sausages, you shouldn't look too carefully into how they are made, and the same is true of OpenType fonts.
+
+In this chapter we're going to look in some depth about the OpenType font format: how it actually converts the outlines, metrics and advanced typographic features of a font into a file that a computer can interpret. In an ideal world, this would be information that programmers of layout systems and font handling libraries would need, but implementation details that font designers could safely ignore.
+
+But we are not in an ideal world, and as we will see when we start discussing the metrics tables, the implementation details matter for font designers too - different operating systems, browsers and applications will potentially interpret the information contained within a font file in different ways leading to different layout.
+
+So put on your overalls, grab your bucket, and let's take a look inside the font sausage factory.
+
 ## What is a font?
+
+From a computer's perspective, a font is a database. It's a related collection of *tables* - lists of information. Some of the information is global, in the sense that it refers to the font as a whole, and some of the information refers to individual glyphs within the font. A schematic representation of a font file would look like this:
+
+![OpenType font schematic](opentype/schematic.svg)
 
 ## FontTools and ttx
 
@@ -191,7 +203,7 @@ There are vertical counterparts to the `hhea` and `hmtx` tables, (called, unsurp
 
 ### The `CFF` table
 
-Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines. The CFF table - as we mentioned above, for fonts using PostScript outlines - begins with a header before it launches into the outline definitions:
+Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. The CFF table - as we mentioned above, for fonts using PostScript outlines - begins with a header before it launches into the outline definitions:
 
 ```
   <CFF>
