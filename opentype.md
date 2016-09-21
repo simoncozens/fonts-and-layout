@@ -11,13 +11,15 @@ So put on your overalls, grab your bucket, and let's take a look inside the font
 
 ## What is a font?
 
-From a computer's perspective, a font is a database. It's a related collection of *tables* - lists of information. Some of the information is global, in the sense that it refers to the font as a whole, and some of the information refers to individual glyphs within the font. A schematic representation of a font file would look like this:
+From a computer's perspective, a font is a database. It's a related collection of *tables* - lists of information. Some of the information is global, in the sense that it refers to the font as a whole, and some of the information refers to individual glyphs within the font. A simplified schematic representation of a font file would look like this:
 
-![OpenType font schematic](opentype/schematic.svg)
+![](opentype/schematic.svg)
+
+In other words, most of the information in a font is not the little black shapes that you look at; aside from having to deal with how to draw the glyphs, the computer is much more concerned with details about how the font is formatted, the glyphs that it supports, the heights, widths and sidebearings of those glyphs, how to lay them out relative to other glyphs, and what clever things in terms of kerns, ligatures and so on need to be applied. Each of these pieces of information is stored inside a table, which is laid out in a binary (non-human-readable) representation inside your OTF file.
 
 ## FontTools and ttx
 
-To help us understand more about what a font actually is, we're going to use a set of Python programs called `fonttools`, originally written by Just van Rossum, but now maintained by Behdad Esfahbod and a cast of hundreds. If you don't have `fonttools` already installed, you can get hold of it by issuing the following commands at a command prompt:
+To crack open that OTF file and look at the tables inside, we're going to use a set of Python programs called `fonttools`. `fonttools` was originally written by Just van Rossum, but is now maintained by Behdad Esfahbod and a cast of hundreds. If you don't have `fonttools` already installed, you can get hold of it by issuing the following commands at a command prompt:
 
 XXX sidenote explaining terminals here
 
@@ -30,7 +32,9 @@ If you have the Homebrew package manager installed, which is highly recommended 
 
 XXX sidenote on Homebrew
 
-The core of the `fonttools` package is a library, some code which helps Python programmers to write programs for manipulating font files. But `fonttools` includes a number of programs already written using the library, and one of these is called `ttx`. `ttx` is used to turn an OpenType or TrueType font into a textual representation, XML. The XML format is designed primarily to be read by computers rather than humans, but it allows us to peek inside the contents of an OpenType font which would otherwise be totally opaque to us.
+The core of the `fonttools` package is a library, some code which helps Python programmers to write programs for manipulating font files. But `fonttools` includes a number of programs already written using the library, and one of these is called `ttx`.
+
+As we mentioned above, an OpenType font file is a database. The database, with its various tables, is stored in a file using a format called SFNT, which stands for "spline font" or "scalable font". OpenType, TrueType, PostScript and a few other font types all use the SFNT representation to lay out their tables into a binary file. But because the SFNT representation is binary - that is to say, not human readable - it's not very easy for us either to investigate what's going on in the font or to make changes to it. The `ttx` utility helps us with that. It is used to turn an SFNT database into a textual representation, XML, and back again. The XML format is still designed primarily to be read by computers rather than humans, but it at least allows us to peek inside the contents of an OpenType font which would otherwise be totally opaque to us.
 
 ## Exploring OpenType with `ttx`
 
@@ -184,7 +188,9 @@ The ascent and descent values (the OpenType specification calls them "Ascender" 
 
 ### The `hmtx` table
 
-Let's go back onto somewhat safer ground, with the `hmtx` table, containing the horizontal metrics of the font's glyphs. As we can see in the screenshots from Glyphs above, we are expecting our /A to have an LSB of 3, an RSB of 3 and a total advance width of 580, while the /B has LSB 90, RSB 40 and advance of 618. Mercifully, that's exactly what we see:
+Let's go back onto somewhat safer ground, with the `hmtx` table, containing the horizontal metrics of the font's glyphs. As we can see in the screenshots from Glyphs above, we are expecting our /A to have an LSB of 3, an RSB of 3 and a total advance width of 580, while the /B has LSB 90, RSB 40 and advance of 618.
+
+Mercifully, that's exactly what we see:
 
 ```
   <hmtx>
@@ -194,7 +200,7 @@ Let's go back onto somewhat safer ground, with the `hmtx` table, containing the 
   </hmtx>
 ```
 
-There are vertical counterparts to the `hhea` and `hmtx` tables, (called, unsurprisingly `vhea` and `vmtx`) but we will discuss those when we look at the impact o f
+There are vertical counterparts to the `hhea` and `hmtx` tables, (called, unsurprisingly `vhea` and `vmtx`) but we will discuss those when we look at implementing global typography in OpenType.
 
 ### The `name` table
 
@@ -203,7 +209,7 @@ There are vertical counterparts to the `hhea` and `hmtx` tables, (called, unsurp
 
 ### The `CFF` table
 
-Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. The CFF table - as we mentioned above, for fonts using PostScript outlines - begins with a header before it launches into the outline definitions:
+Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. The CFF table - as we mentioned above, for fonts using PostScript outlines - begins with a header before it launches into the outline definitions. This gives some :
 
 ```
   <CFF>
