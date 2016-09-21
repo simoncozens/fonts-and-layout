@@ -36,12 +36,6 @@ XXX How do make this functional and task-driven rather than abstract?
 
 ## Features, lookups and rules
 ## The feature language
-## How features are encoded
-## Color fonts
-## Font variations
-
-Common OpenType Features
-========================
 
 ## Kerns
 ## Ligatures
@@ -51,14 +45,27 @@ Common OpenType Features
 ## Contextual Alternates
 ## Positioning
 
-Font localisation
-=================
+## How features are encoded
 
-## Turkish i
-## Serbian be
-## Polish Kreska
-## Navajo Ogonek
-## Arabic, Urdu and Sindhi
+## Color fonts
+## Font variations
+
+OT for internationalisation
+===========================
+
+(This all need reorganising nicely)
+## Features
+### Turkish i
+### Serbian be
+### Polish Kreska
+### Navajo Ogonek
+### Arabic, Urdu and Sindhi
+## Other tables
+### Baselines
+### Vertical typesetting
+### Anchors
+### Mark-to-mark / mark-to-base
+### Entry / Exit
 
 Advanced Feature programming
 ============================
@@ -71,6 +78,7 @@ Layout Challenges
 =================
 
 ## Bidirectionality
+## Other directionality (vertical etc.)
 ## Arabic connection
 ## Line breaking & word detection
 ### CJK

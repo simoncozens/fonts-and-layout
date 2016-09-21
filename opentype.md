@@ -43,29 +43,16 @@ First, let's list what tables we have present in the font:
 
 All apart from the first two tables in our file are required in every TrueType and OpenType font. Here is what these tables are for:
 
-`OS/2`
-: glyph metrics used historically by OS/2 and Windows platforms
-
-`cmap`
-: mapping between characters and glyphs
-
-`head`
-: basic font metadata
-
-`hhea`
-: basic information for horizontal typesetting
-
-`hmtx`
-: horizontal metrics (width and left sidebearing) of each character
-
-`maxp`
-: information used by for the font processor when loading the font
-
-`name`
-: a table of "names" - textual descriptions and information about the font
-
-`post`
-: information used when downloading fonts to PostScript printers
+-------   --------------------------
+`OS/2`    glyph metrics used historically by OS/2 and Windows platforms
+`cmap`    mapping between characters and glyphs
+`head`    basic font metadata
+`hhea`    basic information for horizontal typesetting
+`hmtx`    horizontal metrics (width and left sidebearing) of each character
+`maxp`    information used by for the font processor when loading the font
+`name`    a table of "names" - textual descriptions and information about the font
+`post`    information used when downloading fonts to PostScript printers
+------------------------------------
 
 The first table, `CFF`, is required if the outlines of the font are represented as PostScript CFF; a font using TrueType representation will have a different set of tables instead (`cvt`, `fpgm`, `glyf`, `loca` and `prep`). The second table in our list, `GSUB`, is one of the more exciting ones; it's the glyph substitution font which, together with `GPOS` (glyph positioning), stores most of the OpenType smarts.
 
@@ -97,5 +84,145 @@ This produces a `ttx` file, which is the XML representation of the font, contain
 
 Here we see our exported glyph `A`, and the special glyph `.notdef` which is used when the font is called upon to display a glyph that is not present. The Glyphs software provides us with a default `.notdef` which looks like this: ![notdef](opentype/notdef.png)
 
+The `post` and `maxp` tables are essentially *aides memoire* for the computer; they are a compilation of values automatically computed from other parts of the font, so we will not examine them any more. The `GSUB` table in our font is empty, so we will not deal with it here, but will return to it when we consider OpenType features.
 
-The `post` and `maxp` tables are essentially *aides memoire* for the computer; they are a compilation of values automatically computed from other parts of the font, so we will not examing them any more.
+### The `head` table
+
+`head` is a general header table with some computed metadata and other top-level information about the font as a whole:
+
+    <head>
+      <!-- Most of this table will be recalculated by the compiler -->
+      <tableVersion value="1.0"/>
+      <fontRevision value="1.0"/>
+      <checkSumAdjustment value="0x9fe5c40f"/>
+      <magicNumber value="0x5f0f3cf5"/>
+      <flags value="00000000 00000011"/>
+      <unitsPerEm value="1000"/>
+      <created value="Tue Sep 20 15:02:17 2016"/>
+      <modified value="Tue Sep 20 15:02:17 2016"/>
+      <xMin value="93"/>
+      <yMin value="-200"/>
+      <xMax value="410"/>
+      <yMax value="800"/>
+      <macStyle value="00000000 00000000"/>
+      <lowestRecPPEM value="3"/>
+      <fontDirectionHint value="2"/>
+      <indexToLocFormat value="0"/>
+      <glyphDataFormat value="0"/>
+    </head>
+
+The most interesting values here for font designers and layout programmers are `unitsPerEm` through `macStyle`.
+
+The `unitsPerEm` value, which defines the scaling of the font to an em, must be a power of two for fonts using TrueType outlines. The most common values are 1000 for CFF fonts and 1024 for TrueType fonts; you may occasionally come across fonts with other values. (Open Sans, for instance, has an upem of 2048.) If you are writing a font renderer, you should not make assumptions about this value!
+
+`created` and `modified` are mostly self-explanatory; in OpenType's binary representation they are actually stored as seconds since January 1st 1904, (Mac versions prior to OS X used this as their *epoch*, or reference point.) but `ttx` has kindly converted this to a more readable time value.
+
+`xMin` through `yMax` represent the highest and lowest coordinates used in the font. In this case, the `.notdef` glyph - the only glyph with any outlines - stretched from -200 below the baseline to 800 units above it, has a left sidebearing of 93, and its right edge falls at X coordinate 410.
+
+The `macStyle` value is a bit field, used, as its name implies, to determine the style of the font on Mac systems. It consists of two bytes; the one on the left is not used, and the bits in the one of the right have the following meanings:
+
+-  ----------
+0  Bold 
+1  Italic 
+2  Underline 
+3  Outline 
+4  Shadow 
+5  Condensed 
+6  Extended 
+7  (unused) 
+--------------
+
+So a bold italic condensed font should have a `macStyle` value of `00000000 00100011` (remember that we count from the right in binary).
+
+### `hhea` and `OS/2`
+
+Before this next test, we will actually add some outlines to our font: a capital A and a capital B:
+
+![A](opentype/sourcesans-A.png)![B](opentype/sourcesans-B.png)
+
+(Outlines taken from Paul Hunt's "Source Sans Pro".)
+
+After exporting the new font and converting the font again using TTX, let's have a look at the `hhea` and `OS/2` tables. These tables are used to set the global defaults when using this font in horizontal typesetting. They represent one of the more unfortunate compromises of the OpenType standard, which brought together font files from both the Windows and Mac platforms. It's a cardinal rule of data handling that you shouldn't store the same value in two different places, because then they will eventually end up either going out of sync or being used in different ways, or, as in the case of OpenType, both.
+
+First, here's the `hhea` table:
+
+```
+  <hhea>
+    <tableVersion value="1.0"/>
+    <ascent value="1000"/>
+    <descent value="-200"/>
+    <lineGap value="0"/>
+    <advanceWidthMax value="618"/>
+    <minLeftSideBearing value="3"/>
+    <minRightSideBearing value="3"/>
+    <xMaxExtent value="578"/>
+    <caretSlopeRise value="1"/>
+    <caretSlopeRun value="0"/>
+    <caretOffset value="0"/>
+    <reserved0 value="0"/>
+    <reserved1 value="0"/>
+    <reserved2 value="0"/>
+    <reserved3 value="0"/>
+    <metricDataFormat value="0"/>
+    <numberOfHMetrics value="3"/>
+  </hhea>
+```
+
+The ascent and descent values (the OpenType specification calls them "Ascender" and "Descender") will be used ... XXX actually this is all horrible and I can't face writing it now. Start with http://typedrawers.com/discussion/1705 when I come back to it.
+
+### The `hmtx` table
+
+Let's go back onto somewhat safer ground, with the `hmtx` table, containing the horizontal metrics of the font's glyphs. As we can see in the screenshots from Glyphs above, we are expecting our /A to have an LSB of 3, an RSB of 3 and a total advance width of 580, while the /B has LSB 90, RSB 40 and advance of 618. Mercifully, that's exactly what we see:
+
+```
+  <hmtx>
+    <mtx name=".notdef" width="500" lsb="93"/>
+    <mtx name="A" width="580" lsb="3"/>
+    <mtx name="B" width="618" lsb="90"/>
+  </hmtx>
+```
+
+There are vertical counterparts to the `hhea` and `hmtx` tables, (called, unsurprisingly `vhea` and `vmtx`) but we will discuss those when we look at the impact o f
+
+### The `name` table
+
+    Dumping 'name' table...
+    Dumping 'cmap' table...
+
+### The `CFF` table
+
+Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines. The CFF table - as we mentioned above, for fonts using PostScript outlines - begins with a header before it launches into the outline definitions:
+
+```
+  <CFF>
+    <CFFFont name="TTXTest-Regular">
+      <version value="001.000"/>
+      <Notice value="copyright missing"/>
+      <FullName value="TTX Test Regular"/>
+      <Weight value="Regular"/>
+      <isFixedPitch value="0"/>
+      <ItalicAngle value="0"/>
+      <UnderlineThickness value="50"/>
+      <PaintType value="0"/>
+      <CharstringType value="2"/>
+      <FontMatrix value="0.001 0 0 0.001 0 0"/>
+      <FontBBox value="3 -200 578 800"/>
+      <StrokeWidth value="0"/>
+      <!-- charset is dumped separately as the 'GlyphOrder' element -->
+      <Encoding name="StandardEncoding"/>
+      <Private>
+        <BlueScale value="0.037"/>
+        <BlueShift value="7"/>
+        <BlueFuzz value="0"/>
+        <ForceBold value="0"/>
+        <LanguageGroup value="0"/>
+        <ExpansionFactor value="0.06"/>
+        <initialRandomSeed value="0"/>
+        <defaultWidthX value="0"/>
+        <nominalWidthX value="0"/>
+      </Private>
+```
+
+## TrueType Collections
+
+## Font variations
