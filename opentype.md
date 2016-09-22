@@ -200,7 +200,7 @@ Mercifully, that's exactly what we see:
   </hmtx>
 ```
 
-There are vertical counterparts to the `hhea` and `hmtx` tables, (called, unsurprisingly `vhea` and `vmtx`) but we will discuss those when we look at implementing global typography in OpenType.
+There are vertical counterparts to the `hhea` and `hmtx` tables (called, unsurprisingly, `vhea` and `vmtx`), but we will discuss those when we look at implementing global typography in OpenType.
 
 ### The `name` table
 
