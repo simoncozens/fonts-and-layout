@@ -1,7 +1,7 @@
 # Site settings
 title: Fonts and Layout
 email: simon@simon-cozens.org
-baseurl: "" # the subpath of your site, e.g. /blog/
+baseurl: "fonts-and-layout" # the subpath of your site, e.g. /blog/
 url: "http://simoncozens.github.io/" # the base hostname & protocol for your site
 twitter_username: simoncozens
 github_username:  simoncozens

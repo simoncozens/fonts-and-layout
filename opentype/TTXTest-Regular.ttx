@@ -5,21 +5,22 @@
     <!-- The 'id' attribute is only for humans; it is ignored when parsed. -->
     <GlyphID id="0" name=".notdef"/>
     <GlyphID id="1" name="A"/>
+    <GlyphID id="2" name="B"/>
   </GlyphOrder>
 
   <head>
     <!-- Most of this table will be recalculated by the compiler -->
     <tableVersion value="1.0"/>
     <fontRevision value="1.0"/>
-    <checkSumAdjustment value="0x9fe5c40f"/>
+    <checkSumAdjustment value="0xcaff2230"/>
     <magicNumber value="0x5f0f3cf5"/>
     <flags value="00000000 00000011"/>
     <unitsPerEm value="1000"/>
-    <created value="Tue Sep 20 15:02:17 2016"/>
-    <modified value="Tue Sep 20 15:02:17 2016"/>
-    <xMin value="93"/>
+    <created value="Wed Sep 21 13:59:26 2016"/>
+    <modified value="Wed Sep 21 13:59:26 2016"/>
+    <xMin value="3"/>
     <yMin value="-200"/>
-    <xMax value="410"/>
+    <xMax value="578"/>
     <yMax value="800"/>
     <macStyle value="00000000 00000000"/>
     <lowestRecPPEM value="3"/>
@@ -33,10 +34,10 @@
     <ascent value="1000"/>
     <descent value="-200"/>
     <lineGap value="0"/>
-    <advanceWidthMax value="500"/>
-    <minLeftSideBearing value="93"/>
-    <minRightSideBearing value="90"/>
-    <xMaxExtent value="410"/>
+    <advanceWidthMax value="618"/>
+    <minLeftSideBearing value="3"/>
+    <minRightSideBearing value="3"/>
+    <xMaxExtent value="578"/>
     <caretSlopeRise value="1"/>
     <caretSlopeRun value="0"/>
     <caretOffset value="0"/>
@@ -45,19 +46,19 @@
     <reserved2 value="0"/>
     <reserved3 value="0"/>
     <metricDataFormat value="0"/>
-    <numberOfHMetrics value="2"/>
+    <numberOfHMetrics value="3"/>
   </hhea>
 
   <maxp>
     <tableVersion value="0x5000"/>
-    <numGlyphs value="2"/>
+    <numGlyphs value="3"/>
   </maxp>
 
   <OS_2>
     <!-- The fields 'usFirstCharIndex' and 'usLastCharIndex'
          will be recalculated by the compiler -->
     <version value="3"/>
-    <xAvgCharWidth value="550"/>
+    <xAvgCharWidth value="566"/>
     <usWeightClass value="400"/>
     <usWidthClass value="5"/>
     <fsType value="00000000 00001000"/>
@@ -91,7 +92,7 @@
     <achVendID value="UKWN"/>
     <fsSelection value="00000000 01000000"/>
     <usFirstCharIndex value="65"/>
-    <usLastCharIndex value="65"/>
+    <usLastCharIndex value="66"/>
     <sTypoAscender value="800"/>
     <sTypoDescender value="-200"/>
     <sTypoLineGap value="200"/>
@@ -155,12 +156,15 @@
     <tableVersion version="0"/>
     <cmap_format_4 platformID="0" platEncID="3" language="0">
       <map code="0x41" name="A"/><!-- LATIN CAPITAL LETTER A -->
+      <map code="0x42" name="B"/><!-- LATIN CAPITAL LETTER B -->
     </cmap_format_4>
     <cmap_format_6 platformID="1" platEncID="0" language="0">
       <map code="0x41" name="A"/>
+      <map code="0x42" name="B"/>
     </cmap_format_6>
     <cmap_format_4 platformID="3" platEncID="1" language="0">
       <map code="0x41" name="A"/><!-- LATIN CAPITAL LETTER A -->
+      <map code="0x42" name="B"/><!-- LATIN CAPITAL LETTER B -->
     </cmap_format_4>
   </cmap>
 
@@ -185,11 +189,11 @@
       <isFixedPitch value="0"/>
       <ItalicAngle value="0"/>
       <UnderlineThickness value="50"/>
-      <PaintType value="0"/>
+      <PaintType value="2"/>
       <CharstringType value="2"/>
       <FontMatrix value="0.001 0 0 0.001 0 0"/>
-      <FontBBox value="93 -200 410 800"/>
-      <StrokeWidth value="0"/>
+      <FontBBox value="3 -200 578 800"/>
+      <StrokeWidth value="5"/>
       <!-- charset is dumped separately as the 'GlyphOrder' element -->
       <Encoding name="StandardEncoding"/>
       <Private>
@@ -234,7 +238,40 @@
           endchar
         </CharString>
         <CharString name="A">
-          600 endchar
+          580 213 72 342 73 hstem
+          3 574 vstem
+          240 700 rmoveto
+          -237 -700 rlineto
+          91 hlineto
+          67 213 rlineto
+          255 hlineto
+          66 -213 rlineto
+          95 hlineto
+          -237 700 rlineto
+          -157 -415 rmoveto
+          33 107 24 79 24 75 22 81 rlinecurve
+          4 hlineto
+          22 -81 23 -76 25 -78 34 -107 rcurveline
+          endchar
+        </CharString>
+        <CharString name="B">
+          618 0 70 264 68 228 70 hstemhm
+          90 88 272 88 -47 87 hintmask 11110100
+          90 700 rmoveto
+          -700 223 vlineto
+          157 108 67 138 96 -58 55 -85 16 hvcurveto
+          5 vlineto
+          hintmask 11111000
+          67 21 36 62 69 vvcurveto
+          123 -98 48 -142 vhcurveto
+          -16 -298 rmoveto
+          -104 228 108 hlineto
+          109 55 -31 -81 -72 -49 -44 -119 hvcurveto
+          hintmask 11110100
+          18 -332 rmoveto
+          -122 264 122 hlineto
+          123 68 -39 -87 -94 -71 -44 -120 hvcurveto
+          endchar
         </CharString>
       </CharStrings>
     </CFFFont>
@@ -250,7 +287,8 @@
 
   <hmtx>
     <mtx name=".notdef" width="500" lsb="93"/>
-    <mtx name="A" width="600" lsb="0"/>
+    <mtx name="A" width="580" lsb="3"/>
+    <mtx name="B" width="618" lsb="90"/>
   </hmtx>
 
 </ttFont>
