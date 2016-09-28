@@ -100,7 +100,7 @@ This produces a `ttx` file, which is the XML representation of the font, contain
 
 Here we see our exported glyph `A`, and the special glyph `.notdef` which is used when the font is called upon to display a glyph that is not present. The Glyphs software provides us with a default `.notdef` which looks like this: ![notdef](opentype/notdef.png)
 
-The `post` and `maxp` tables are essentially *aides memoire* for the computer; they are a compilation of values automatically computed from other parts of the font, so we will not examine them any more. The `GSUB` table in our font is empty, so we will not deal with it here, but will return to it when we consider OpenType features.
+The `post` and `maxp` tables are essentially *aides memoire* for the computer; they are a compilation of values automatically computed from other parts of the font. The `GSUB` table in our font is empty, so we will not deal with it here, but will return to it when we consider OpenType features.
 
 ### The `head` table
 
@@ -186,6 +186,8 @@ First, here's the `hhea` table:
 
 The ascent and descent values (the OpenType specification calls them "Ascender" and "Descender") will be used ... XXX actually this is all horrible and I can't face writing it now. Start with http://typedrawers.com/discussion/1705 when I come back to it.
 
+XXX OS/2
+
 ### The `hmtx` table
 
 Let's go back onto somewhat safer ground, with the `hmtx` table, containing the horizontal metrics of the font's glyphs. As we can see in the screenshots from Glyphs above, we are expecting our /A to have an LSB of 3, an RSB of 3 and a total advance width of 580, while the /B has LSB 90, RSB 40 and advance of 618.
@@ -209,7 +211,11 @@ There are vertical counterparts to the `hhea` and `hmtx` tables (called, unsurpr
 
 ### The `CFF` table
 
-Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. The CFF table - as we mentioned above, for fonts using PostScript outlines - begins with a header before it launches into the outline definitions. This gives some :
+Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. First, we'll look at the `CFF` table which, as mentioned about, represents fonts with PostScript outlines.
+
+What's interesting about the `CFF` table is that its representation is "alien" to OpenType. CFF is a data format borrowed wholesale from elsewhere - Adobe invented the Compact Font Format in 1996 as a "compact" (binary) way to represent its PostScript Type 1 fonts, as opposed to the longform way of representing font data in the PostScript language. It was used since PDF version 1.2 to represent font subsets within PDF documents, and later introduced into OpenType as the representation for PS outlines.
+
+In other words, CFF is an independent font format, and so begins its own "public" header before it launches into the outline definitions, giving some general information about the font:
 
 ```
   <CFF>
@@ -228,6 +234,15 @@ Finally, let's look at the table which is of least interest to typography and la
       <StrokeWidth value="0"/>
       <!-- charset is dumped separately as the 'GlyphOrder' element -->
       <Encoding name="StandardEncoding"/>
+```
+
+From an OpenType perspective, much of this is information we already know, but which has to be filled in to make this table conform to the CFF format. Font production software will generally copy this information from other parts of the font: the copyright notice and font name find their native OpenType home in the `name` table, the weight value can be found in the `OS/2` table, the bounding box information comes from the `head` table, and so on.
+
+It's not clear if any software cares too much about the values in this header. As an experiment, I tried modifying the paint type and stroke width to attempt to create an outline font (recompiling the XML representation back into OpenType, again using `ttx`), and embedding this in a PDF document, but nothing changed.
+
+After the public header comes a private header, which is very much used:
+
+```
       <Private>
         <BlueScale value="0.037"/>
         <BlueShift value="7"/>
@@ -240,6 +255,137 @@ Finally, let's look at the table which is of least interest to typography and la
         <nominalWidthX value="0"/>
       </Private>
 ```
+
+These mainly have to do with hinting, which we will deal with in the appropriate chapter.
+
+Finally we get to the good stuff:
+
+```
+      <CharStrings>
+        ...
+        <CharString name="A">
+          580 213 72 342 73 hstem
+          3 574 vstem
+          240 700 rmoveto
+          -237 -700 rlineto
+          91 hlineto
+          67 213 rlineto
+          255 hlineto
+          66 -213 rlineto
+          95 hlineto
+          -237 700 rlineto
+          -157 -415 rmoveto
+          33 107 24 79 24 75 22 81 rlinecurve
+          4 hlineto
+          22 -81 23 -76 25 -78 34 -107 rcurveline
+          endchar
+```
+
+The definition of the characters themselves, in the postscript language, begins with some hinting information: the total width is 580, and there's a horizontal stem that starts at 213 and goes for 72 units to 285; (the crossbar of the A) then another which goes from 285+342=627 to 627+73=700 to represent the apex of the A. The vertical stem goes from the left side bearing (3 units) all the way across the glyph.
+
+Then there are a series of moving and drawing operations: we start at the left side of the apex, and draw a diagonal line down to (3,0). (PostScript uses relative coordinates) For a horizontal line, we only need to know the width: `91 lineto` takes us from (3,0) to (94,0). We go around the outline until `-237 700` takes us back to the top *right* of the apex, and moving the pen closes the outline. Now when we move to the aperture of the A, we see some curves - there are subtle flexes within the diagonals of the aperture. (You font designers are *clever* people.) `rlinecurve` specifies the relative positions of the start, first control point, second control point and end point of our cubic Bézier curve. We move across to the right a bit, have a curve that comes down, and that concludes our letter A.
+
+### The `post` table
+
+While we're on the subject of PostScript Type 1 representation, let's briefly look at the `post` table, which is used to assemble data for downloading fonts onto PostScript printers:
+
+  <post>
+    <formatType value="3.0"/>
+    <italicAngle value="0.0"/>
+    <underlinePosition value="-75"/>
+    <underlineThickness value="50"/>
+    <isFixedPitch value="0"/>
+    <minMemType42 value="0"/>
+    <maxMemType42 value="0"/>
+    <minMemType1 value="0"/>
+    <maxMemType1 value="0"/>
+  </post>
+
+The `post` table has been through various revisions; in previous versions, it would also include a list of glyph names, but as of version 3.0, no glyph names are provided to the PostScript processor. The final four values are hints to the driver as to how much memory this font requires to process. Setting it to zero doesn't do any harm; it just means that the driver has to work it out for itself. The italic angle is specified in degrees *counter*clockwise, so a font that leans forward 10 degrees will have an italic angle of -10. `isFixedPitch` specifies a monospaced font, and the remaining two values are irrelevant because nobody should ever use underlining for anything.
+
+## TrueType Representation
+
+If we output our test font with TrueType outlines, we see things have changed:
+
+```
+  $ ttx -l TTXTest-Regular.ttf
+  Listing table info for "TTXTest-Regular.ttf":
+      tag     checksum   length   offset
+      ----  ----------  -------  -------
+      DSIG  0x00000001        8     1960
+      GSUB  0x00010000       10     1948
+      OS/2  0x683D6762       96      764
+      cmap  0x007700CF       74      860
+      cvt   0x00000000        6     1416
+      fpgm  0x47A67342      479      936
+      gasp  0x001A0023       16     1932
+      glyf  0xABA0B11E      368      252
+      head  0x09740B40       54      660
+      hhea  0x062F01A9       36      728
+      hmtx  0x06A200BA       12      716
+      loca  0x00840118        8      652
+      maxp  0x00780451       32      620
+      name  0xDF876A4F      465     1424
+      post  0xFFDE0057       40     1892
+```
+
+An OpenType font with TrueType outlines does not have a `CFF` table, but instead contains a number of other tables; two of which contain data about the glyphs themselves:
+
+-------   --------------------------
+`glyf`    Glyph data
+`loca`    Index to location
+-------   --------------------------
+
+And four which are used for hinting and rasterizing, which we will deal with in the appropriate chapter:
+
+-------   --------------------------
+`prep`    The Control Value "pre-program"
+`fpgm`    Font program
+`cvt`     Data values used by the hint program
+`gasp`    Information about how to render the font on grayscale devices
+-------   --------------------------
+
+The names of the first two of these hinting tables are somewhat misleading. The "font program" (`fpgm`) is run once before the font is used, in order to set up definitions and functions for hinting, whereas the "pre-program" (`prep`) actually contains the size-specific font hinting instructions and is executed every time the font changes size. Yes, this is completely brain-dead.
+
+How are glyphs represented in TrueType outlines? The binary representation in the table is in a series of fixed-width arrays, containing instructions, relative coordinates and flags, (see the OpenType specification if you need to deal with the binary tables) but `ttx` expands them to a very friendly format for us:
+
+```
+    <TTGlyph name="A" xMin="3" yMin="0" xMax="577" yMax="700">
+      <contour>
+        <pt x="240" y="700" on="1"/>
+        <pt x="340" y="700" on="1"/>
+        <pt x="577" y="0" on="1"/>
+        <pt x="482" y="0" on="1"/>
+        <pt x="416" y="213" on="1"/>
+        <pt x="161" y="213" on="1"/>
+        <pt x="94" y="0" on="1"/>
+        <pt x="3" y="0" on="1"/>
+      </contour>
+      <contour>
+        <pt x="394" y="285" on="1"/>
+        <pt x="360" y="392" on="1"/>
+        <pt x="320" y="518" on="0"/>
+        <pt x="290" y="627" on="1"/>
+        <pt x="286" y="627" on="1"/>
+        <pt x="258" y="527" on="0"/>
+        <pt x="233" y="449" on="1"/>
+        <pt x="228" y="430" on="0"/>
+        <pt x="216" y="392" on="1"/>
+        <pt x="183" y="285" on="1"/>
+      </contour>
+      <instructions><assembly>
+        </assembly></instructions>
+    </TTGlyph>
+```
+
+Here we can see the two contours of our A, as a series of on-curve and off-curve points. Remember that TrueType uses *quadratic* Bézier curves, so within our aperture we only see one off-curve point between the on-point curves. Glyphs has converted our Béziers for us:
+
+![](opentype/bezier.svg)
+
+What about the `loca` table? The `glyf` table contains all contours for all the glyphs, one after another as a big long binary lump. When you're trying to find a glyph, you look up its glyph index in the `loca` table, and it'll tell you which byte of the `glyf` table you need to jump to.
+
+## And more tables!
+
 
 ## TrueType Collections
 
