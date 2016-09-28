@@ -1,0 +1,13 @@
+- {fn: history, title: "A brief history of type"}
+- { fn: concepts, title: "Font Concepts "}
+- { fn: unicode, title: "The Unicode Standard", some: 1}
+- { fn: opentype, title: "How OpenType Works", some: 1}
+- { fn: feature, title: "Advanced OpenType Capabilities",}
+- { fn: localisation, title: "OpenType for Global Scripts"}
+- { fn: feature, title: "Advanced Feature Programming "}
+- { fn: layout, title: "Layout Challenges in Global Type "}
+- { fn: hint, title: "Rasterisation and Hinting "}
+- { fn: web, title: "Fonts on the Web "}
+- { fn: freetype, title: "OpenType for Programmers: Freetype2 "}
+- { fn: harfbuzz, title: "Text Layout for Programmers: Harfbuzz "}
+- { fn: raqm, title: "Text Layout for Programmers: libraqm "}

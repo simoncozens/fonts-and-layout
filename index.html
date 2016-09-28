@@ -1,0 +1,18 @@
+---
+layout: default
+---
+
+<div class="home">
+
+  <ul class="post-list">
+{% for chapter in site.data.chapters %}
+  <li>
+    {% if chapter.some %}
+      <a href="{{ chapter.fn }}.html">{{ chapter.title }}</a>
+    {% else %}
+      {{ chapter.title }}
+    {% endif %}
+  </li>
+{% endfor %}
+</ul>
+</div>

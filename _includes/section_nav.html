@@ -1,0 +1,23 @@
+{% for chapter in site.data.chapters %}
+  {% assign document_url = chapter.fn | prepend:"/"| append:".html" %}
+  {% if document_url == page.url %}
+    <div class="section-nav">
+          {% if forloop.first %}
+            <span class="prev disabled">Back</span>
+          {% else %}
+            {% assign previous = forloop.index0 | minus: 1 %}
+            {% assign previous_page = site.data.chapters[previous].fn | prepend:"/" | append:".html" %}
+            <a href="{{ previous_page }}" class="prev">{{ site.data.chapters[previous].title }}</a>
+          {% endif %}
+          <span class="sep">|</span>
+          {% if forloop.last %}
+            <span class="next disabled">Next</span>
+          {% else %}
+            {% assign next = forloop.index0 | plus: 1 %}
+            {% assign next_page = site.data.chapters[next].fn | prepend:"/" | append:".html" %}
+            <a href="{{ next_page }}" class="next">{{ site.data.chapters[next].title }}</a>
+          {% endif %}
+    </div>
+    {% break %}
+  {% endif %}
+{% endfor %}

@@ -1,5 +1,7 @@
-The Unicode Standard
-====================
+---
+layout: chapter
+title: The Unicode Standard
+---
 
 When humans exchange information, we use sentences, words, and - most relevantly for our purposes - letters. But computers don't know anything about letters. Computers only know about numbers, and to be honest, they don't know much about them, either. Because computers are, ultimately, great big collections of electronic switches, they only know about two numbers: zero, if a switch is off, and one, when a switch is on.
 
@@ -38,12 +40,15 @@ The names of the character encodings reflect the number of bits used in encoding
 
 For example, the character 🎅 (FATHER CHRISTMAS) lives in Finland, just inside the Arctic circle, and in the Unicode Standard, at codepoint 127877. In binary, this is 11111001110001111, which we can encode in four bytes using UTF-32 as follows:
 
--------  -------- -------- -------- --------
-Binary                   1 11110011 10001111
-Padded   00000000 00000001 11110011 10001111
-Hex            00       01       F3       85
-Decimal         0        1      243      133
--------  -------- -------- -------- --------
+|---
+| |
+|-------|--------|--------:|--------:|--------:|
+|Binary |         |       1|11110011|10001111|
+|Padded | 00000000|00000001|11110011|10001111|
+|Hex    |       00|      01|      F3|      85|
+|Decimal|        0|       1|     243|     133|
+|-------|--------|--------|--------|--------|
+
 
 > There's only one slight complication: whether the bytes should appear in the order `00 01 F3 85` or in reverse order `85 F3 01 00`. By default UTF-32 stores data "big-end first" (`00 01 F3 85`) but some systems prefer to put the "little-end" first. They let you know that they're doing this by encoding a special character (ZERO WIDTH NO BREAKING SPACE) at the start of the file. How this character is encoded tells you how the rest of the file is laid out. When ZWNBS is used in this way, it's called a BOM - Byte Order Mark.
 
