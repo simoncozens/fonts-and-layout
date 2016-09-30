@@ -7,6 +7,7 @@ OpenType for Global Scripts
 ### Polish Kreska
 ### Navajo Ogonek
 ### Arabic, Urdu and Sindhi
+## (Lots of Devanagari etc. needs to go here)
 ## Other tables
 ### Baselines
 ### Vertical typesetting
