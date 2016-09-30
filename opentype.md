@@ -23,7 +23,7 @@ In other words, most of the information in a font is not the little black shapes
 
 To crack open that OTF file and look at the tables inside, we're going to use a set of Python programs called `fonttools`. `fonttools` was originally written by Just van Rossum, but is now maintained by Cosimo Lupo and a cast of hundreds. If you don't have `fonttools` already installed, you can get hold of it by issuing the following commands at a command prompt:
 
-XXX sidenote explaining terminals here
+> If you're a Mac user and you're not familiar with using a terminal emulator, pick up a copy of "Learning for OS X" by Dave Taylor. If you're a Windows user, I'm afraid you're on your own; Windows has never made it particularly easy to operate the computer through the command prompt, and it's too painful to explain it here.
 
     easy_install pip
     pip install fonttools
@@ -32,7 +32,7 @@ If you have the Homebrew package manager installed, which is highly recommended 
 
     brew install fonttools
 
-XXX sidenote on Homebrew
+> Homebrew is a system which allows you to easily install and manage a number of useful free software packages on Mac OS X. You can get it from http://brew.sh/
 
 The core of the `fonttools` package is a library, some code which helps Python programmers to write programs for manipulating font files. But `fonttools` includes a number of programs already written using the library, and one of these is called `ttx`.
 
@@ -187,6 +187,8 @@ First, here's the `hhea` table:
 
 The ascent and descent values (the OpenType specification calls them "Ascender" and "Descender") will be used ... XXX actually this is all horrible and I can't face writing it now. Start with http://typedrawers.com/discussion/1705 when I come back to it.
 
+### The `OS/2` table
+
 XXX OS/2
 
 ### The `hmtx` table
@@ -205,8 +207,11 @@ There are vertical counterparts to the `hhea` and `hmtx` tables (called, unsurpr
 
 ### The `name` table
 
-    Dumping 'name' table...
-    Dumping 'cmap' table...
+XXX
+
+### The `cmap` table
+
+XXX
 
 ### The `CFF` table
 
