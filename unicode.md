@@ -5,7 +5,7 @@ title: The Unicode Standard
 
 When humans exchange information, we use sentences, words, and - most relevantly for our purposes - letters. But computers don't know anything about letters. Computers only know about numbers, and to be honest, they don't know much about them, either. Because computers are, ultimately, great big collections of electronic switches, they only know about two numbers: zero, if a switch is off, and one, when a switch is on.
 
-By lining up a row of switches, we can represent bigger numbers. These days, computers normally line up eight switches in a unit, called a *byte*. With eight switches and two states for each switch, we have $2^8 = 256$ possible states in a byte, so we can represent a number between 0 and 255. But still, everything is a number.
+By lining up a row of switches, we can represent bigger numbers. These days, computers normally line up eight switches in a unit, called a *byte*. With eight switches and two states for each switch, we have $$ 2^8 = 256 $$ possible states in a byte, so we can represent a number between 0 and 255. But still, everything is a number.
 
 To move from numbers to letters and store text in a computer, we need to agree on a code. We might decide that when we're expecting text, the number 1 means "a", number 2 means "b" and so on. This mapping between numbers and characters is called an *encoding*.
 
@@ -27,6 +27,8 @@ XXX History
 XXX Unicode v ISO 10646 - UCS
 
 ## Languages in Unicode
+
+XXX BMP
 
 ## How data is stored
 
@@ -50,12 +52,38 @@ For example, the character 🎅 (FATHER CHRISTMAS) lives in Finland, just inside
 |-------|--------|--------|--------|--------|
 
 
-> There's only one slight complication: whether the bytes should appear in the order `00 01 F3 85` or in reverse order `85 F3 01 00`. By default UTF-32 stores data "big-end first" (`00 01 F3 85`) but some systems prefer to put the "little-end" first. They let you know that they're doing this by encoding a special character (ZERO WIDTH NO BREAKING SPACE) at the start of the file. How this character is encoded tells you how the rest of the file is laid out. When ZWNBS is used in this way, it's called a BOM - Byte Order Mark.
+> There's only one slight complication: whether the bytes should appear in the order `00 01 F3 85` or in reverse order `85 F3 01 00`. By default UTF-32 stores data "big-end first" (`00 01 F3 85`) but some systems prefer to put the "little-end" first. They let you know that they're doing this by encoding a special character (ZERO WIDTH NO BREAKING SPACE) at the start of the file. How this character is encoded tells you how the rest of the file is laid out. When ZWNBS is used in this way, it's called a BOM - Byte Order Mark - and is not interpreted as the first character of a document.
 
 UTF-32 is a very simple and transparent encoding - four bytes is one character, always, and one character is always four bytes - so it's often used as a way of processing Unicode data inside of a program. Many programming languages already allow you to read and write numbers that are four bytes long, so representing Unicode code points as numbers isn't a problem. (A "wide character", in languages such as C or Python, is a 32-bit wide data type, ideal for processing UTF-32 data.)
 But UTF-32 is not very efficient. The first byte is always going to be zero, and the top seven bits of the second byte are going to be zero too. So UTF-32 is not often used as an on-disk storage format: we don't like the idea of spending nearly 50% of our disk space on bytes that are guaranteed to be empty.
 
-So can we find a compromise where we use fewer bytes but still represent the majority of characters we're likely to use, in a relatively straightforward way? UTF-16
+So can we find a compromise where we use fewer bytes but still represent the majority of characters we're likely to use, in a relatively straightforward way? UTF-16 uses a group of 16 bits (2 bytes) instead of 32, on the basis that the first two bytes of UTF-32 are almost always unused. UTF-32 simply drops them, using two bytes to represent the Unicode characters from 0 to 65535, the characters within the Basic Multilingual Plane. This worked fine for the majority of characters that people were likely to use. (At least, before emoji inflicted themselves upon the world.) If you want to encode the Thai letter *to pa-tak* (ฏ) which lives at code point 3599 in the Unicode standard, we write 3599 in binary: `0000111000001111` and get two bytes `0E 0F`.
+
+But what if, as in the case of FATHER CHRISTMAS, we want to access code points above 65535? This is where the compromise comes in: to make it easy and efficient to represent characters in the BMP, UTF-16 gives up the ability to easily and efficiently represent characters outside. Instead, it uses a mechanism called *surrogate pairs* to encode a character from the supplementary planes. A surrogate pair is a 2-byte sequence that looks like it ought to be a valid Unicode character, but is actually from a reserved range which represents a move to another plane. So  UTF-16 uses 16 bits for a character inside the BMP, but two 16 bit sequences for those outside; in other words, UTF-16 is *generally* a fixed-width encoding, but in certain circumstances a character can be either two or four bytes.
+
+Surrogate pairs work like this:
+
+* First, subtract `0x010000` from the code point you want to encode. Now you have a 20 bit number.
+
+* Split the 20 bit number into two 10 bit numbers. Add `0xD800` to the first, to give a number in the range `0xD800..0xDBFF`. Add `0xDC00` to the second, to give a number in the range `0xDC00..0xDFFF`. These are your two 16-bit code blocks.
+
+So for FATHER CHRISTMAS, we start with codepoint 127877, which in hexadecimal is `0x1F385`.
+
+* Take away `0x010000` to get `F385`, or `00001111001110000101`.
+
+* Split this into `0000111100 1110000101` or `03C 385`.
+
+* `0xD800` + `0x03C` = `D83C`
+
+* `0xDC00` + `0x385` = `DF85`.
+
+So FATHER CHRISTMAS in UTF-16 is `D8 3C DF 85`.
+
+> Because most characters in use are in the BMP, and because the surrogate pairs *could* be interpreted as Unicode code points, some software may not bother to interpret surrogate pair processing. I suppose we should be grateful that emoji has forced programmers to be more aware of supplemental planes.
+
+But UTF-16 still uses two bytes for ASCII and Western European Latin, which sadly are the only characters that any programmers actually care about. UTF-8 takes the trade-off introduced by UTF-16 a little further: characters in the ASCII set are represented as one bytes, just as they were originally in ASCII, while code points above 127 are represented using a variable number of bytes: codepoints from `0x80` to `0x7FF` are two bytes, from `0x800` to 0xffff` are three bytes, and higher characters are four bytes.
+
+
 
 ## Character properties
 
