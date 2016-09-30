@@ -81,9 +81,41 @@ So FATHER CHRISTMAS in UTF-16 is `D8 3C DF 85`.
 
 > Because most characters in use are in the BMP, and because the surrogate pairs *could* be interpreted as Unicode code points, some software may not bother to interpret surrogate pair processing. I suppose we should be grateful that emoji has forced programmers to be more aware of supplemental planes.
 
-But UTF-16 still uses two bytes for ASCII and Western European Latin, which sadly are the only characters that any programmers actually care about. UTF-8 takes the trade-off introduced by UTF-16 a little further: characters in the ASCII set are represented as one bytes, just as they were originally in ASCII, while code points above 127 are represented using a variable number of bytes: codepoints from `0x80` to `0x7FF` are two bytes, from `0x800` to 0xffff` are three bytes, and higher characters are four bytes.
+But UTF-16 still uses two bytes for ASCII and Western European Latin, which sadly are the only characters that any programmers actually care about. UTF-8 takes the trade-off introduced by UTF-16 a little further: characters in the ASCII set are represented as one bytes, just as they were originally in ASCII, while code points above 127 are represented using a variable number of bytes: codepoints from `0x80` to `0x7FF` are two bytes, from `0x800` to `0xffff` are three bytes, and higher characters are four bytes.
 
+The conversion is best done by an existing computer program or library - you shouldn't have to do UTF-8 encoding by hand - but for reference, this is what you do. First, work out how many bytes the encoding is going to need, based on the Unicode code point. Then, convert the code point to binary, split it up and insert it into the pattern below, and pad with leading zeros:
 
+|---
+| Code point | Byte 1 | Byte 2 | Byte 3 | Byte 4 |
+|-------|-------:|--------:|--------:|--------:|
+|`0x00-0x7F`|`0xxxxxxx`|
+|`0x80-0x7FF`|`110xxxxx`|`10xxxxxx`|
+|`0x800-0xFFFF`|`1110xxxx`|`10xxxxxx`|`10xxxxxx`|
+|`0x10000-0x10FFFF`|`11110xxx`|`10xxxxxx`|`10xxxxxx`|`10xxxxxx`|
+|-------|-------|--------|--------|--------|
+
+> Originally UTF-8 allowed sequences up to seven bytes long to encode characters all the way up to `0x7FFFFFFF`, but this was restricted when UTF-8 became an Internet standard to match the range of UTF-16. Once we need to encode more than a million characters in Unicode, UTF-8 will be insufficient. However, we are still some way away from that situation.
+
+FATHER CHRISTMAS is going to take four bytes, because he is above `0x1000`. The binary representation of his codepoint 127877 is `11111001110000101`, so, inserting his bits into the pattern from the right, we get:
+
+|---
+||||
+|-------|-------:|--------:|--------:|--------:|
+|`0x1000-0x10FFFF`|`11110xxx`|`10x`**`11111`**|`10`**`001110`**|`10`**`000101`**|
+|-------|-------|--------|--------|--------|
+
+Finally, padding with zeros, we get:
+
+|---
+||||
+|-------:|--------:|--------:|--------:|
+|`11110`**`000`**|`10`**`011111`**|`10`**`001110`**|`10`**`000101`**|
+|`F0`|`9F`|`8E`|`85`|
+|-------|--------|--------|--------|
+
+UTF-8 is not a bad trade-off. It's variable width, which means more work to process, but the benefit of that is efficiency - characters don't take up any more bytes than they need to. And the processing work is mitigated by the fact that the initial byte signals how long the byte sequence is. The leading bytes of the sequence also provide an unambiguous synchronisation point for processing software - if you don't recognise where you are inside a byte stream, just back up a maximum of four characters until you see a byte starting `0`, `110`, `1110` or `11110` and go from there.
+
+Because of this, UTF-8 has become the *de facto* encoding standard of the Internet, with around 90% of web pages using it. If you have data that you're going to be shaping with an OpenType shaping engine, it's most likely going to begin in UTF-8 before being transformed to UTF-32 internally.
 
 ## Character properties
 
