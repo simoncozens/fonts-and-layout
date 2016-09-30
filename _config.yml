@@ -1,5 +1,5 @@
 # Site settings
-title: Fonts and Layout
+title: Fonts and Layout for Global Scripts
 email: simon@simon-cozens.org
 baseurl: "/fonts-and-layout/" # the subpath of your site, e.g. /blog/
 url: "http://simoncozens.github.io/" # the base hostname & protocol for your site
