@@ -187,8 +187,6 @@ First, here's the `hhea` table:
 
 The ascent and descent values (the OpenType specification calls them "Ascender" and "Descender") will be used ... XXX actually this is all horrible and I can't face writing it now. Start with http://typedrawers.com/discussion/1705 when I come back to it.
 
-### The `OS/2` table
-
 XXX OS/2
 
 ### The `hmtx` table
@@ -207,11 +205,50 @@ There are vertical counterparts to the `hhea` and `hmtx` tables (called, unsurpr
 
 ### The `name` table
 
-XXX
+Any textual data stored within a font goes in the `name` table; not just the name of the font itself, but the version, copyright, creator and many other strings are found inside a font. For our purposes, one of the loveliest things about OpenType is that these strings are localisable, in that they can be specified in multiple languages; your bold font can appear as Bold, Gras, Fett, or Grassetto depending on the user's language preference.
+
+Unfortunately, as with the rest of OpenType, the ugliest thing is that it is a compromise between multiple font platform vendors, and all of them need to be supported in different ways. Multiple platforms times multiple languages means a proliferation of entries for the same field. So, for instance, there may be a number of entries for the font's designer: one entry for when the font is used on the Mac (platform ID 1, in OpenType speak) and one for when it is used on Windows (platform ID 3).
+
+> There's also a platform ID 0, for the "Unicode platform", and platform ID 2, for ISO 10646. Yes, these platforms are technically identical, but politically distinct. But don't worry; nobody ever uses those anyway.
+
+There may be further entries *for each platform* if the creator's name should appear differently in different scripts: a Middle Eastern type designer may wish their name to appear in Arabic when the font is used in an Arabic environment, or in Latin script otherwise.
+
+XXX Now encode the string. See http://typedrawers.com/discussion/1802/non-latin-in-the-name-table
 
 ### The `cmap` table
 
-XXX
+A font can contain whatever glyphs, in whatever encoding and order, it likes. If you want to start your font with a Tibetan letter ga (ག) as glyph ID 1, nothing is going to stop you. But for the font to work, you need to provide information about how users should access the glyphs they want to use - or in other words, how your glyph IDs map to the Unicode (or other character set) code points that their text consists of. The `cmap` table is that character map.
+
+If a user's text has the letter `A` (Unicode code point `0x41`), which glyph in the font should be used? Here's how it looks in our dummy font:
+
+    <cmap>
+      <tableVersion version="0"/>
+      <cmap_format_4 platformID="0" platEncID="3" language="0">
+        <map code="0x41" name="A"/><!-- LATIN CAPITAL LETTER A -->
+        <map code="0x42" name="B"/><!-- LATIN CAPITAL LETTER B -->
+      </cmap_format_4>
+      <cmap_format_6 platformID="1" platEncID="0" language="0">
+        <map code="0x41" name="A"/>
+        <map code="0x42" name="B"/>
+      </cmap_format_6>
+      <cmap_format_4 platformID="3" platEncID="1" language="0">
+        <map code="0x41" name="A"/><!-- LATIN CAPITAL LETTER A -->
+        <map code="0x42" name="B"/><!-- LATIN CAPITAL LETTER B -->
+      </cmap_format_4>
+    </cmap>
+
+The `ttx` software used to generate the textual dump of the font has been overly helpful in this case - it has taken the mapping of characters to glyph *ID*s, and has then replaced the IDs by names. The `cmap` table itself just contains glyph IDs.
+
+Looking back at the `GlyphOrder` pseudo-table that `ttx` has generated for us:
+
+    <GlyphOrder>
+      <!-- The 'id' attribute is only for humans; it is ignored when parsed. -->
+      <GlyphID id="0" name=".notdef"/>
+      <GlyphID id="1" name="A"/>
+      <GlyphID id="2" name="B"/>
+    </GlyphOrder>
+
+We see that if the user wants Unicode codepoint `0x41`, we need to use glyph number 1 in the font. The shaping engine will use this information to turn code points in input documents into glyph IDs.
 
 ### The `CFF` table
 
