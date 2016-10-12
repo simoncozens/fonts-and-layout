@@ -26,7 +26,7 @@ Clearly there was a need for a new encoding; one with a broad enough scope to en
 XXX History
 XXX Unicode v ISO 10646 - UCS
 
-## Languages in Unicode
+## Global Scripts in Unicode
 
 XXX BMP
 
@@ -122,3 +122,5 @@ Because of this, UTF-8 has become the *de facto* encoding standard of the Intern
 ## Case conversion
 
 ## Normalization and decomposition
+
+## ICU
