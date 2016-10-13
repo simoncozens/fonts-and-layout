@@ -213,7 +213,7 @@ Unfortunately, as with the rest of OpenType, the ugliest thing is that it is a c
 
 There may be further entries *for each platform* if the creator's name should appear differently in different scripts: a Middle Eastern type designer may wish their name to appear in Arabic when the font is used in an Arabic environment, or in Latin script otherwise.
 
-XXX Now encode the string. See http://typedrawers.com/discussion/1802/non-latin-in-the-name-table
+While it's *in theory* possible to create non-Latin string entries for the Mac platform, nobody really seems to do this. Encode all your non-Latin strings for the Windows platform (`platformID=3`) in UTF-32, choose the appropriate [language ID](https://www.microsoft.com/typography/otspec180/name.htm) from the OpenType specification, and you should be OK.
 
 ### The `cmap` table
 
@@ -422,4 +422,5 @@ What about the `loca` table? The `glyf` table contains all contours for all the 
 
 ## TrueType Collections
 
+In OpenType, one 
 ## Font variations
