@@ -419,8 +419,31 @@ What about the `loca` table? The `glyf` table contains all contours for all the 
 
 ## And more tables!
 
+We've looked at all of the compulsory tables in an OpenType font; there are many other tables which can also be present.
 
-## TrueType Collections
+XXX
 
-In OpenType, one 
+Finally, there is one more table which we haven't mentioned, but without which nothing would work: the very first table in the font, called the Offset Table, tells the system which tables are contained in the font file and where they are located within the file. If we were to look at our dummy OpenType font file in a hex editor, we would see some familiar names at the start of the file:
+
+    00000000: 4f54 544f 000a 0080 0003 0020 4346 4620  OTTO....... CFF
+    00000010: 400e 39a4 0000 043c 0000 01de 4753 5542  @.9....<....GSUB
+    00000020: 0001 0000 0000 061c 0000 000a 4f53 2f32  ............OS/2
+    00000030: 683d 6762 0000 0110 0000 0060 636d 6170  h=gb.......`cmap
+    00000040: 0017 0132 0000 03d0 0000 004a 6865 6164  ...2.......Jhead
+    00000050: 0975 3eb0 0000 00ac 0000 0036 6868 6561  .u>........6hhea
+    00000060: 062f 01a9 0000 00e4 0000 0024 686d 7478  ./.........$hmtx
+    00000070: 06a2 00ba 0000 0628 0000 000c 6d61 7870  .......(....maxp
+
+`OTTO` is a magic string to tell us this is an OpenType font. Then there is a few bytes of bookkeeping information, followed by the name of each table, a checksum of its content, its offset within the file, and its length. So here we see that the `CFF ` table lives at offset `0x0000043c` (or byte 1084) and stretches for `0x000001de` (478) bytes long.
+
+## Font Collections
+
+In OpenType, each instance of a font's family lives in its own file. So Robert Slimbach's Minion Pro family - available in two widths, four weights, four optical sizes, and roman and italic styles - ships as $$ 2 * 4 * 4 * 2 = 64 $$ separate `.otf` files. In many cases, some of the information contained in the font will be the same in each file - the character maps, the ligature and other substitution features, and so on.
+
+Font collections provide a way of both sharing this common information and packaging families more conveniently to the user. Originally called TrueType Collections, a font collection is a single file (with the extension `.ttc`) containing multiple fonts. Each font within the collection has its own Offset Table, and this naturally allows it to share tables. For instance, a collection might share a `GSUB` table between family members; in this case, the `GSUB` entry in each member's Offset Table would point to the same location in the file.
+
 ## Font variations
+
+Another, more flexible way of putting multiple family members in the same file is provided by OpenType Variable Fonts. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, variable fonts fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between.
+
+As with everything OpenType, variable fonts are achieved through additional tables; and as with everything OpenType, legacy compromises means that things are achieved in different ways depending on whether you're using PostScript or TrueType outlines. TrueType Outlines are the easiest to understand, so we'll start with these.
