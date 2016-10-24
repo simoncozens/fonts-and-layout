@@ -119,7 +119,34 @@ Because of this, UTF-8 has become the *de facto* encoding standard of the Intern
 
 ## Character properties
 
+The Unicode Standard isn't merely a collection of characters and their code points. The standard also contains the Unicode Character Database, a number of core data files containing the information that computers need in order to correctly process those characters. For example, the main database file, `UnicodeData.txt` contains a `General_Category` property which tells you if a codepoint represents a letter, number, mark, punctuation character and so on.
+
+Let's pick a few characters and see what Unicode says about them. We'll begin with codepoint U+0041, the letter `A`. First, looking in `UnicodeData.txt` we see
+
+    0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;
+
+After the codepoint and official name, we get the general category, which is `Lu`, or "Letter, uppercase." The next field, 0, is useful when you're combining and decomposing characters, which we'll look at later. The `L` tells us this is a strong left-to-right character, which is of critical importance when we look at bidirectionality in later chapters. Otherwise, `UnicodeData.txt` doesn't tell us much about this letter - it's not a character composed of multiple characters stuck together and it's not a number, so the next three fields are blank. The `N` means it's not a character that mirrors when the script flips from left to right (like parentheses do between English and Arabic. The next two fields are no longer used. The final fields are to do with upper and lower case versions: Latin has upper and lower cases, and this character is simple enough to have a single unambiguous lower case version, codepoint U+0061. It doesn't have an upper or title case versions, because it already is upper case (d'oh).
+
+What else do we know about this character? Looking in `Blocks.txt` we can discover that it is part of the range, `0000..007F; Basic Latin`. `LineBreak.txt` is used by the line breaking algorithm, something we'll also look at in the chapter on layout.
+
+    0041..005A;AL     # Lu    [26] LATIN CAPITAL LETTER A..LATIN CAPITAL LETTER Z
+
+This tells us that the upper case A is an alphabetic character for the purposes of line breaking. `PropList.txt` is a rag-tag collection of Unicode property information, and we will find two entries for our character there:
+
+    0041..0046    ; Hex_Digit # L&   [6] LATIN CAPITAL LETTER A..LATIN CAPITAL LETTER F
+    0041..0046    ; ASCII_Hex_Digit # L&   [6] LATIN CAPITAL LETTER A..LATIN CAPITAL LETTER F
+
+These tell us that it is able to be used as a hexadecimal digit, both in a more relaxed sense and strictly as a subset of ASCII. (U+FF21, a full-width version of `Ａ` used occasionally when writing Latin characters in Japanese text, is a hex digit, but it's not an ASCII hex digit.) Finally, `CaseFolding.txt` tells us:
+
+    0041; C; 0061; # LATIN CAPITAL LETTER A
+
+When you want to case-fold a string containing `A`, you should replace it with codepoint `0061`, which as we've already seen, is LATIN SMALL LETTER A.
+
+Now let's look at a more interesting example. N'ko is a unicase alphabet used to write the Mandinka and Bambara languages of West Africa. But if we knew nothing about it, what could the Unicode Character Database teach us? Let's look at a sample letter, 
+
 ## Case conversion
+
+A tiny minority of writing systems, such as those based on the Latin alphabet, have the concept of upper and lower case versions of a character. 
 
 ## Normalization and decomposition
 
