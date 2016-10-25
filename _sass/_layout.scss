@@ -248,3 +248,19 @@ td { border: 1px solid #ccc; padding: 10px; }
     .prev { float: left; }
     .sep { display: none; }
 }
+
+p + p { text-indent: 30px; }
+
+blockquote {
+    font-family: "Noto Sans", "Source Sans Pro", "Source Sans", sans-serif;
+    margin-left: 5%;
+    margin-right: 5%;
+    text-align: justify;
+    font-style: normal;
+    font-size: 80%;
+    letter-spacing: 0px;
+}
+
+html {
+    text-align: justify;
+}
