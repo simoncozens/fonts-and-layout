@@ -183,7 +183,17 @@ This is the kind of data that text processing systems can derive programmaticall
 
 ## Case conversion
 
-A tiny minority of writing systems, such as those based on the Latin alphabet, have the concept of upper and lower case versions of a character. 
+A tiny minority of writing systems, such as those based on the Latin alphabet, have the concept of upper and lower case versions of a character. For some language systems like English, this is fairly simple and unambiguous. Each of the 26 letters of the Latin alphabet used in English have a single upper and lower case. However, other languages which use cases often have characters which do not have such a simple mapping. The Unicode character database, and especially the file `SpecialCasing.txt`, provides machine-readable information about case conversion.
+
+The classic example is German. When the sharp-s character U+00DF (ß) is uppercased, it becomes the *two* characters "SS". There is clearly a round-tripping problem here, because when the characters "SS" are downcased, they become "ss", not ß. For more fun, Unicode also defines the character U+1E9E, LATIN CAPITAL LETTER SHARP S (ẞ), which downcases to ß.
+
+The other classic example is Turkish. The ordinary Latin small letter "i" (U+0069) normally uppercases to "I" (U+0049) - except when the document is written in Turkish or Azerbaijani, when it uppercases to "İ". This is because there is another letter used in those languages, LATIN SMALL LETTER DOTLESS I (U+1031, ı), which uppercases to "I". So case conversion needs to be aware of the linguistic background of the text.
+
+As well as depending on language, case conversion also depends on context. GREEK CAPITAL LETTER SIGMA (Σ) downcases to GREEK SMALL LETTER SIGMA (σ) except at the end of a word, in which case it downcases to ς, GREEK SMALL LETTER FINAL SIGMA.
+
+Another example comes from the fact that Unicode may have a *composed form* for one case, but not for another. Code point U+0390 in Unicode is occupied by GREEK SMALL LETTER IOTA WITH DIALYTIKA AND TONOS, which looks like this: ΐ. But for whatever reason, Unicode never encoded a corresponding GREEK CAPITAL LETTER IOTA WITH DIALYTIKA AND TONOS. Instead, when this is placed into upper case, three code points are required: U+0399, GREEK CAPITAL LETTER IOTA provides the Ι; then U+3080 COMBINING DIAERESIS provides the dialytika; and lastly, U+0301 COMBINING ACUTE ACCENT provides the tonos.
+
+Which seems like as good a time as any to talk about combining characters, decomposition and normalization.
 
 ## Normalization and decomposition
 
