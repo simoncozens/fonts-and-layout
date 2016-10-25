@@ -142,7 +142,19 @@ These tell us that it is able to be used as a hexadecimal digit, both in a more 
 
 When you want to case-fold a string containing `A`, you should replace it with codepoint `0061`, which as we've already seen, is LATIN SMALL LETTER A.
 
-Now let's look at a more interesting example. N'ko is a unicase alphabet used to write the Mandinka and Bambara languages of West Africa. But if we knew nothing about it, what could the Unicode Character Database teach us? Let's look at a sample letter, 
+Now let's look at a more interesting example. N'ko is a script used to write the Mandinka and Bambara languages of West Africa. But if we knew nothing about it, what could the Unicode Character Database teach us? Let's look at a sample letter, U+07DE NKO LETTER KA (ߞ).
+
+First, from `UnicodeData.txt`:
+
+    07DE;NKO LETTER KA;Lo;0;R;;;;;N;;;;;
+
+This tells me that the character is a Letter-other - neither upper nor lower case - and the lack of case conversion information at the end confirms that N'ko is a unicase script. The `R` tells me that N'ko is written from right to left, like Hebrew and Arabic. It's an alphabetic character for line breaking purposes, according to `LineBreak.txt`, and there's no reference to it in `PropList.txt`. But when we look in `ArabicShaping.txt` we find something very interesting:
+
+    07DE; NKO KA; D; No_Joining_Group
+
+The letter ߞ is a double-joining character, meaning that N'ko is a connected script like Arabic, and the letter Ka connects on both sides. That is, in the middle of a word like "n'ko" ("I say"), the letter looks like this: ߒߞߏ.
+
+This is the kind of data that text processing systems can derive programmatically from the Unicode Character Database. Of course, if you really want to know about how to handle N'ko text and the N'ko writing system in general, the Unicode Standard itself is a good reference point: its section on N'ko (section 19.4) tells you about the origins of the script, the structure, diacritical system, punctuation, number systems and so on. When dealing with computer processing of an unfamiliar writing system, the Unicode Standard is often a great place to start.
 
 ## Case conversion
 
