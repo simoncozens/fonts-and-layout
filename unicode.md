@@ -23,12 +23,25 @@ To write Japanese you need 100 syllabic characters and anything between 2,000 an
 
 Clearly there was a need for a new encoding; one with a broad enough scope to encode *all* the world's characters, and one which could unify the proliferation of local "standards" into a single, global information processing standard. That encoding is Unicode.
 
-XXX History
-XXX Unicode v ISO 10646 - UCS
+In 1984, the International Standards Organisation began the task of developing such a global information processing standard. You may sometimes hear Unicode referred to as ISO 10646, which is sort of true. In 1986, developers from Apple and Xerox began discussing a proposed encoding system which they referred to as Unicode. The Unicode working group expanded and developed in parallel to ISO 10646, and in 1991 became formally incorporated as the Unicode Consortium and publishing Unicode 1.0. At this point, ISO essentially gave up trying to do their own thing.
+
+This doesn't mean that ISO 10646 is dead. Instead, ISO 10646 is a formal international standard definition of a Universal Coded Character Set, also known as UCS. The UCS is deliberately synchronised with the character-to-codepoint mapping defined in the Unicode Standard, but the work remains formally independent. At the same time, the Unicode Standard defines more than just the character set; it also defines a wide range of algorithms, data processing expectations and other advisory information about dealing with global scripts.
 
 ## Global Scripts in Unicode
 
-XXX BMP
+At the time of writing, the Unicode Standard is up to version 9.0, and new scripts and characters are being encoded all the time. The Unicode character set is divided into 17 planes, each covering 65536 code points, for a total of 1,114,112 possible code points. Currently, only 128,327 of those code points have been assigned characters; 137,468 code points (including the whole of the last two planes) are reserved for private use.
+
+> Private use means that *within an organisation, community or system* you may use these code points to encode any characters you see fit. However, private use characters should not "escape" into the outside world. Some organisations maintain registries of characters they have assigned to private use code points; for example, the SIL linguistic community have encoded 248 characters for their own use. One of these is , LATIN LETTER SMALL CAPITAL L WITH BELT, which they have encoded at position U+F268. But there's nothing to stop another organisation assigning a *different* character to U+F268 within their systems. If allocations start clashing, you lose the whole point of using a common universal character set. So use private use characters... privately.
+
+Most characters live in the first plane, Plane 0, otherwise known as the Basic Multilingual Plane. The BMP is pretty full now - there are only 128 code points left unallocated - but it covers almost all languages in current use. Plane 1 is called the Supplementary Multilingual Plane, and mainly contains historic scripts, symbols and emoji. Lots and lots of emoji. Plane 2 contains extended CJK (Chinese, Japanese and Korean) ideographs with mainly rare and historic characters, while planes 3 through 13 are currently completely unallocated. So Unicode still has a lot of room to grow.
+
+Within each plane, Unicode allocates each writing system a range of codepoints called a block. Blocks are not of fixed size, and are not exhaustive - once codepoints are allocated, they can't be moved around, so if new characters from a writing system get added and their block fills up, a separate block somewhere else in the character set will be created. For instance, groups of Latin-like characters have been added on multiple occasions. This means that there are now 17 blocks allocated for different Latin characters; one of them, Latin Extended-B, consists of 208 code points, and contains Latin characters such as Ƕ (Latin Capital Letter Hwair), letters used in the transcription of Pinyin, and African clicks like U+013C, ǃ - which may look a lot like an exclamation mark but is actually the ǃKung letter Latin Letter Retroflex Click.
+
+> The distinction between ǃ (Retroflex Click) and ! (exclamation mark) illustrates a fundamental principle of Unicode: encode what you mean, not what you see. If we were to use the exclamation mark character for both uses just because they were visually identical, we would sow semantic confusion. Keeping the code points separate keeps your data unambiguous.
+
+Here is the complete list of scripts already encoded in Unicode as of version 9.0: Adlam, Ahom, Anatolian Hieroglyphs, Arabic, Armenian, Avestan, Balinese, Bamum, Bassa Vah, Batak, Bengali, Bhaiksuki, Bopomofo, Brahmi, Braille, Buginese, Buhid, Canadian Aboriginal, Carian, Caucasian Albanian, Chakma, Cham, Cherokee, Common (that is, characters used in multiple scripts), Coptic, Cuneiform, Cypriot, Cyrillic, Deseret, Devanagari, Duployan, Egyptian Hieroglyphs, Elbasan, Ethiopic, Georgian, Glagolitic, Gothic, Grantha, Greek, Gujarati, Gurmukhi, Han (that is, Chinese, Japanese and Korean ideographs), Hangul, Hanunoo, Hatran, Hebrew, Hiragana, Imperial Aramaic, Inscriptional Pahlavi, Inscriptional Parthian, Javanese, Kaithi, Kannada, Katakana, Kayah Li, Kharoshthi, Khmer, Khojki, Khudawadi, Lao, Latin, Lepcha, Limbu, Linear A, Linear B, Lisu, Lycian, Lydian, Mahajani, Malayalam, Mandaic, Manichaean, Marchen, Meetei Mayek, Mende Kikakui, Meroitic Cursive, Meroitic Hieroglyphs, Miao, Modi, Mongolian, Mro, Multani, Myanmar, Nabataean, New Tai Lue, Newa, Nko, Ogham, Ol Chiki, Old Hungarian, Old Italic, Old North Arabian, Old Permic, Old Persian, Old South Arabian, Old Turkic, Oriya, Osage, Osmanya, Pahawh Hmong, Palmyrene, Pau Cin Hau, Phags Pa, Phoenician, Psalter Pahlavi, Rejang, Runic, Samaritan, Saurashtra, Sharada, Shavian, Siddham, SignWriting, Sinhala, Sora Sompeng, Sundanese, Syloti Nagri, Syriac, Tagalog, Tagbanwa, Tai Le, Tai Tham, Tai Viet, Takri, Tamil, Tangut, Telugu, Thaana, Thai, Tibetan, Tifinagh, Tirhuta, Ugaritic, Vai, Warang Citi, Yi.
+
+What should you do if you are developing resources for a script which is not encoded in Unicode? Well, first you should check whether or not it has already been proposed for inclusion by looking at the [Proposed New Scripts](http://www.unicode.org/pending/pending.html) web site; if not, then you should contact the Unicode mailing list to see if anyone is working on a proposal; then you should contact the [Script Encoding Initiative](http://linguistics.berkeley.edu/sei/), who will help to guide you through the process of preparing a proposal to the Unicode Technical Committee. This is not a quick process; some scripts have been in the "preliminary stage" for the past ten years, while waiting to gather expert opinions on their encoding.
 
 ## How data is stored
 
@@ -144,11 +157,15 @@ This tells us that the upper case A is an alphabetic character for the purposes 
     0041..0046    ; Hex_Digit # L&   [6] LATIN CAPITAL LETTER A..LATIN CAPITAL LETTER F
     0041..0046    ; ASCII_Hex_Digit # L&   [6] LATIN CAPITAL LETTER A..LATIN CAPITAL LETTER F
 
-These tell us that it is able to be used as a hexadecimal digit, both in a more relaxed sense and strictly as a subset of ASCII. (U+FF21, a full-width version of `Ａ` used occasionally when writing Latin characters in Japanese text, is a hex digit, but it's not an ASCII hex digit.) Finally, `CaseFolding.txt` tells us:
+These tell us that it is able to be used as a hexadecimal digit, both in a more relaxed sense and strictly as a subset of ASCII. (U+FF21, a full-width version of `Ａ` used occasionally when writing Latin characters in Japanese text, is a hex digit, but it's not an ASCII hex digit.) `CaseFolding.txt` tells us:
 
     0041; C; 0061; # LATIN CAPITAL LETTER A
 
-When you want to case-fold a string containing `A`, you should replace it with codepoint `0061`, which as we've already seen, is LATIN SMALL LETTER A.
+When you want to case-fold a string containing `A`, you should replace it with codepoint `0061`, which as we've already seen, is LATIN SMALL LETTER A. Finally, in `Scripts.txt`, we discover...
+
+    0041..005A    ; Latin # L&  [26] LATIN CAPITAL LETTER A..LATIN CAPITAL LETTER Z
+
+...that this codepoint is part of the Latin script. You knew that, but now a computer does too.
 
 Now let's look at a more interesting example. N'ko is a script used to write the Mandinka and Bambara languages of West Africa. But if we knew nothing about it, what could the Unicode Character Database teach us? Let's look at a sample letter, U+07DE NKO LETTER KA (ߞ).
 
