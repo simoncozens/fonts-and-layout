@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ttFont sfntVersion="OTTO" ttLibVersion="3.0">
+<ttFont sfntVersion="OTTO" ttLibVersion="3.1">
 
   <GlyphOrder>
     <!-- The 'id' attribute is only for humans; it is ignored when parsed. -->
     <GlyphID id="0" name=".notdef"/>
     <GlyphID id="1" name="A"/>
     <GlyphID id="2" name="B"/>
+    <GlyphID id="3" name="C"/>
   </GlyphOrder>
 
   <head>
     <!-- Most of this table will be recalculated by the compiler -->
     <tableVersion value="1.0"/>
     <fontRevision value="1.0"/>
-    <checkSumAdjustment value="0xcaff2230"/>
+    <checkSumAdjustment value="0x1cf78933"/>
     <magicNumber value="0x5f0f3cf5"/>
     <flags value="00000000 00000011"/>
     <unitsPerEm value="1000"/>
-    <created value="Wed Sep 21 13:59:26 2016"/>
-    <modified value="Wed Sep 21 13:59:26 2016"/>
+    <created value="Wed Oct 26 16:01:16 2016"/>
+    <modified value="Wed Oct 26 16:01:16 2016"/>
     <xMin value="3"/>
-    <yMin value="-200"/>
+    <yMin value="-525"/>
     <xMax value="578"/>
-    <yMax value="800"/>
+    <yMax value="1025"/>
     <macStyle value="00000000 00000000"/>
     <lowestRecPPEM value="3"/>
     <fontDirectionHint value="2"/>
@@ -46,19 +47,19 @@
     <reserved2 value="0"/>
     <reserved3 value="0"/>
     <metricDataFormat value="0"/>
-    <numberOfHMetrics value="3"/>
+    <numberOfHMetrics value="4"/>
   </hhea>
 
   <maxp>
     <tableVersion value="0x5000"/>
-    <numGlyphs value="3"/>
+    <numGlyphs value="4"/>
   </maxp>
 
   <OS_2>
     <!-- The fields 'usFirstCharIndex' and 'usLastCharIndex'
          will be recalculated by the compiler -->
     <version value="3"/>
-    <xAvgCharWidth value="566"/>
+    <xAvgCharWidth value="495"/>
     <usWeightClass value="400"/>
     <usWidthClass value="5"/>
     <fsType value="00000000 00001000"/>
@@ -92,7 +93,7 @@
     <achVendID value="UKWN"/>
     <fsSelection value="00000000 01000000"/>
     <usFirstCharIndex value="65"/>
-    <usLastCharIndex value="66"/>
+    <usLastCharIndex value="67"/>
     <sTypoAscender value="800"/>
     <sTypoDescender value="-200"/>
     <sTypoLineGap value="200"/>
@@ -157,14 +158,17 @@
     <cmap_format_4 platformID="0" platEncID="3" language="0">
       <map code="0x41" name="A"/><!-- LATIN CAPITAL LETTER A -->
       <map code="0x42" name="B"/><!-- LATIN CAPITAL LETTER B -->
+      <map code="0x43" name="C"/><!-- LATIN CAPITAL LETTER C -->
     </cmap_format_4>
     <cmap_format_6 platformID="1" platEncID="0" language="0">
       <map code="0x41" name="A"/>
       <map code="0x42" name="B"/>
+      <map code="0x43" name="C"/>
     </cmap_format_6>
     <cmap_format_4 platformID="3" platEncID="1" language="0">
       <map code="0x41" name="A"/><!-- LATIN CAPITAL LETTER A -->
       <map code="0x42" name="B"/><!-- LATIN CAPITAL LETTER B -->
+      <map code="0x43" name="C"/><!-- LATIN CAPITAL LETTER C -->
     </cmap_format_4>
   </cmap>
 
@@ -181,6 +185,8 @@
   </post>
 
   <CFF>
+    <major value="1"/>
+    <minor value="0"/>
     <CFFFont name="TTXTest-Regular">
       <version value="001.000"/>
       <Notice value="copyright missing"/>
@@ -189,11 +195,11 @@
       <isFixedPitch value="0"/>
       <ItalicAngle value="0"/>
       <UnderlineThickness value="50"/>
-      <PaintType value="2"/>
+      <PaintType value="0"/>
       <CharstringType value="2"/>
       <FontMatrix value="0.001 0 0 0.001 0 0"/>
-      <FontBBox value="3 -200 578 800"/>
-      <StrokeWidth value="5"/>
+      <FontBBox value="3 -525 578 1025"/>
+      <StrokeWidth value="0"/>
       <!-- charset is dumped separately as the 'GlyphOrder' element -->
       <Encoding name="StandardEncoding"/>
       <Private>
@@ -206,6 +212,136 @@
         <initialRandomSeed value="0"/>
         <defaultWidthX value="0"/>
         <nominalWidthX value="0"/>
+        <Subrs>
+          <!-- The 'index' attribute is only for humans; it is ignored when parsed. -->
+          <CharString index="0">
+            0 hflex1
+            return
+          </CharString>
+          <CharString index="1">
+            0 flex1
+            return
+          </CharString>
+          <CharString index="2">
+            -9 -106 callsubr
+            return
+          </CharString>
+          <CharString index="3">
+            hintmask 000000000010000000000000100000000000000000000000
+            return
+          </CharString>
+          <CharString index="4">
+            hintmask 000000000100000000000000000010000000000000000000
+            return
+          </CharString>
+          <CharString index="5">
+            -6 -107 callsubr
+            return
+          </CharString>
+          <CharString index="6">
+            -107 callsubr
+            0 return
+          </CharString>
+          <CharString index="7">
+            -99 callsubr
+            -17 -6 -105 callsubr
+            return
+          </CharString>
+          <CharString index="8">
+            vhcurveto
+            9 0 6 -9 0 -15 0 return
+          </CharString>
+          <CharString index="9">
+            0 5 -97 callsubr
+            -5 return
+          </CharString>
+          <CharString index="10">
+            -8 0 -16 0 -17 return
+          </CharString>
+          <CharString index="11">
+            rmoveto
+            0 6 3 3 3 7 3 -3 -101 callsubr
+            return
+          </CharString>
+          <CharString index="12">
+            5 -6 -6 -4 -5 -107 callsubr
+            -15 4 -6 6 return
+          </CharString>
+          <CharString index="13">
+            0 -3 -6 0 -16 0 -13 3 -6 -106 callsubr
+            return
+          </CharString>
+          <CharString index="14">
+            hintmask 001000000000000000000000010000000000000000000000
+            return
+          </CharString>
+          <CharString index="15">
+            hintmask 000000000000001000000000000000100000000000000000
+            return
+          </CharString>
+          <CharString index="16">
+            hintmask 000000000000001000000000000000000000001000000000
+            return
+          </CharString>
+          <CharString index="17">
+            hintmask 000000000001000000000000100000000000000000000000
+            return
+          </CharString>
+          <CharString index="18">
+            hintmask 000000000000010010000000000000000000000000000000
+            return
+          </CharString>
+          <CharString index="19">
+            hintmask 000000000000001000000001000000000000000000000000
+            return
+          </CharString>
+          <CharString index="20">
+            hintmask 000000001000000000000000000000100000000000000000
+            return
+          </CharString>
+          <CharString index="21">
+            hintmask 000100000000000000000000000000000010000000000000
+            return
+          </CharString>
+          <CharString index="22">
+            hintmask 000100000000000000000000000100000000000000000000
+            return
+          </CharString>
+          <CharString index="23">
+            hintmask 001000000000000000000000000000000010000000000000
+            return
+          </CharString>
+          <CharString index="24">
+            hintmask 000000000001000000000000000000100000000000000000
+            return
+          </CharString>
+          <CharString index="25">
+            0 -16 -6 -105 callsubr
+            return
+          </CharString>
+          <CharString index="26">
+            0 13 -4 6 -5 -6 -4 -102 callsubr
+            return
+          </CharString>
+          <CharString index="27">
+            -3 -3 -5 -4 -4 3 -107 callsubr
+            return
+          </CharString>
+          <CharString index="28">
+            vhcurveto
+            hintmask 000000010000000000000000000000000000001000000000
+            return
+          </CharString>
+          <CharString index="29">
+            rmoveto
+            hintmask 000010000000000000000010000000000000000000000000
+            return
+          </CharString>
+          <CharString index="30">
+            -6 9 16 hvcurveto
+            return
+          </CharString>
+        </Subrs>
       </Private>
       <CharStrings>
         <CharString name=".notdef">
@@ -273,6 +409,306 @@
           123 68 -39 -87 -94 -71 -44 -120 hvcurveto
           endchar
         </CharString>
+        <CharString name="C">
+          282 -522 22 -16 7 15 13 267 11 5 16 -13 19 143 74 447 21 6 12 157 21 -5 22 6 62 -9 41 -32 23 167 21 -6 22 hstemhm
+          66 22 -21 25 -11 44 -35 13 -8 19 -11 22 -21 9 -4 17 -9 9 -1 23 -16 19 -13 8 -6 9 -9 24 -22 10 0 19 -15 18 -12 21 -20 10 -3 19 -12 9 -7 23 -21 9 vstemhm
+          198 9 -6 9 7 10 hintmask 001100001100011000010000000000100000000010000000
+          90 980 rmoveto
+          13 hlineto
+          hintmask 000000000000000100010000000000000000000000000000
+          37 -11 4 vlineto
+          5 2 3 0 3 2 rrcurveto
+          6 hlineto
+          -88 callsubr
+          -45 9 -4 vlineto
+          hintmask 001100001100011000010000000000100000000010000000
+          -28 hlineto
+          -88 callsubr
+          36 25 rmoveto
+          -92 callsubr
+          16 6 8 8 vhcurveto
+          11 0 7 -97 callsubr
+          -7 -8 -106 callsubr
+          -88 callsubr
+          -8 -6 8 17 hvcurveto
+          hintmask 000000000000001000000000000001000000000000000000
+          38 hmoveto
+          -91 callsubr
+          16 6 8 9 vhcurveto
+          11 -98 callsubr
+          -8 -106 callsubr
+          hintmask 000000000000001000000000000001000000000000000000
+          -9 -6 8 17 hvcurveto
+          hintmask 000000000000001000000000000000000000010000000000
+          38 hmoveto
+          hintmask 000000000000001000000000000000000000000001000000
+          16 5 8 10 vhcurveto
+          10 -98 callsubr
+          -8 -106 callsubr
+          hintmask 000000000000001000000000000000000000010000000000
+          -10 -5 8 17 hvcurveto
+          -92 callsubr
+          -51 hmoveto
+          hintmask 000000000000001000000000001000000000000000000000
+          0 14 -4 6 -7 -3 -5 -102 callsubr
+          -15 5 -6 3 vhcurveto
+          -92 callsubr
+          7 4 6 15 hvcurveto
+          -91 callsubr
+          39 hmoveto
+          hintmask 000000000000001000000000000000000001000000000000
+          0 14 -5 6 -6 -5 -4 -102 callsubr
+          -15 4 -6 5 vhcurveto
+          -91 callsubr
+          6 5 6 15 hvcurveto
+          hintmask 000000000000001000000000000000000000000001000000
+          37 hmoveto
+          0 14 -3 6 -7 -7 -1 -102 callsubr
+          -15 1 -6 7 7 3 6 15 vhcurveto
+          hintmask 000000000000000100010000000000000000000000000000
+          -177 -6 rmoveto
+          0 6 5 5 3 6 3 -5 -101 callsubr
+          -3 -3 -6 -6 -3 -5 6 -107 callsubr
+          -89 callsubr
+          38 -205 rmoveto
+          7 3 3 7 3 vhcurveto
+          -3 3 -4 4 3 vvcurveto
+          hintmask 000000000000010000000000100000000000000000000000
+          0 9 7 3 6 10 3 -3 -107 callsubr
+          -3 -3 -7 -3 vhcurveto
+          hintmask 000000000001000010000000000000000000000000000000
+          6 -3 3 -3 -7 vvcurveto
+          -89 callsubr
+          0 -9 -6 -6 -10 -9 -7 6 -107 callsubr
+          -90 callsubr
+          38 10 rmoveto
+          -83 callsubr
+          19 7 6 9 vhcurveto
+          10 0 6 -6 0 -19 -82 callsubr
+          -90 callsubr
+          -9 -7 9 16 hvcurveto
+          hintmask 000000000000010000000000000000100000000000000000
+          39 hmoveto
+          hintmask 000000000000010000000000000000000000001000000000
+          19 6 6 10 vhcurveto
+          9 0 7 -6 0 -19 0 -16 -7 -105 callsubr
+          hintmask 000000000000010000000000000000100000000000000000
+          -10 -77 callsubr
+          hintmask 000000000000010000001000000000000000000000000000
+          -51 13 rmoveto
+          0 6 -3 3 -7 -3 -6 -3 -101 callsubr
+          -3 6 -4 6 -3 4 3 3 4 -106 callsubr
+          -83 callsubr
+          38 -13 rmoveto
+          hintmask 000000000000100000000000000000100000000000000000
+          16 -3 6 -7 vhcurveto
+          -83 callsubr
+          -6 -94 callsubr
+          7 3 6 13 hvcurveto
+          hintmask 000000000000100000000000000000000000001000000000
+          38 hmoveto
+          16 -3 6 -6 vhcurveto
+          -7 -94 callsubr
+          6 3 6 13 hvcurveto
+          -89 callsubr
+          -140 -3 -96 callsubr
+          -7 -3 -3 -7 -3 -3 3 -107 callsubr
+          hintmask 000000000001000000001000000000000000000000000000
+          64 -7 rmoveto
+          hintmask 000000000000010000001000000000000000000000000000
+          0 7 -7 0 -6 3 -3 -3 -3 -3 -106 callsubr
+          hintmask 000000000001000000001000000000000000000000000000
+          0 -6 3 -3 6 7 3 3 -107 callsubr
+          hintmask 000000000100000000000000100000000000000000000000
+          11 -85 rmoveto
+          -103 callsubr
+          15 6 9 9 -100 callsubr
+          hintmask 000000000100000000000000100000000000000000000000
+          -9 -6 9 17 hvcurveto
+          -103 callsubr
+          37 hmoveto
+          hintmask 000000000100000000000000000000000000100000000000
+          15 5 9 10 -100 callsubr
+          -103 callsubr
+          -10 -5 9 17 hvcurveto
+          -104 callsubr
+          -51 17 rmoveto
+          -24 6 hlineto
+          -90 callsubr
+          31 -4 hlineto
+          hintmask 000000000010000000000100000000000000000000000000
+          -11 -14 -2 -11 -1 -18 rrcurveto
+          -6 hlineto
+          -104 callsubr
+          17 4 12 9 12 vhcurveto
+          -103 callsubr
+          38 -17 rmoveto
+          0 13 -4 6 -5 -6 -3 -102 callsubr
+          -14 3 -7 6 5 4 7 14 vhcurveto
+          hintmask 000000000100000000000000000000000000100000000000
+          37 hmoveto
+          -81 callsubr
+          -14 4 -7 6 5 4 7 14 vhcurveto
+          -104 callsubr
+          -136 -5 rmoveto
+          0 5 4 4 4 5 3 -4 -101 callsubr
+          -6 -80 callsubr
+          76 -191 rmoveto
+          -87 callsubr
+          16 6 8 10 vhcurveto
+          10 0 6 -97 callsubr
+          -6 -105 callsubr
+          -104 callsubr
+          -10 -6 9 17 hvcurveto
+          -87 callsubr
+          38 hmoveto
+          hintmask 000000001000000000000000000000000000001000000000
+          16 6 8 10 vhcurveto
+          10 -98 callsubr
+          -105 callsubr
+          -87 callsubr
+          -10 -6 9 17 hvcurveto
+          hintmask 000000010000000000010000000000000000000000000000
+          -77 -19 rmoveto
+          3 4 rlineto
+          -3 3 4 -3 6 hhcurveto
+          6 0 4 4 0 7 0 7 -4 4 -106 callsubr
+          -3 -2 -1 -2 -3 hvcurveto
+          -4 2 rlineto
+          hintmask 000000001000000001000000000000000000000000000000
+          2 23 rlineto
+          hintmask 000000001000000000000000100000000000000000000000
+          24 -5 hlineto
+          hintmask 000000001000000000010000000000000000000000000000
+          -19 hlineto
+          -1 -14 rlineto
+          1 2 3 1 3 hhcurveto
+          hintmask 000000001000000000000000100000000000000000000000
+          8 6 -5 -11 hvcurveto
+          hintmask 000000010000000000000000100000000000000000000000
+          -10 -7 -6 -9 vhcurveto
+          hintmask 000000010000000000010000000000000000000000000000
+          -7 -6 3 4 -3 hvcurveto
+          hintmask 000000010000000000000000000000100000000000000000
+          65 19 rmoveto
+          0 14 -4 -95 callsubr
+          6 4 6 15 -79 callsubr
+          37 hmoveto
+          hintmask 000000010000000000000000000000000001000000000000
+          0 14 -3 -95 callsubr
+          -79 callsubr
+          6 3 6 15 hvcurveto
+          hintmask 000000001000000000010000000000000000000000000000
+          -139 -5 rmoveto
+          0 6 4 3 5 4 4 -3 -101 callsubr
+          -6 -4 -3 -4 -5 -4 3 -107 callsubr
+          hintmask 000000100000000000100000000000001000000000000000
+          75 -500 rmoveto
+          31 12 19 19 18 13 -19 -31 -31 -13 -19 -18 -19 -12 19 31 vhcurveto
+          49 hmoveto
+          31 -6 6 -12 vhcurveto
+          -13 0 -6 -6 0 -31 0 -25 6 -12 -106 callsubr
+          12 6 12 25 hvcurveto
+          -124 -6 rmoveto
+          0 12 6 6 6 13 6 -6 -101 callsubr
+          -13 -6 -6 -13 -6 -6 6 -107 callsubr
+          hintmask 000100000000000000000010000000000000000000000000
+          60 -213 -78 callsubr
+          14 14 8 8 8 vvcurveto
+          5 -3 4 -6 -4 -3 -3 -3 -3 vhcurveto
+          -4 4 rlineto
+          -85 callsubr
+          4 4 5 3 5 hhcurveto
+          9 6 -6 -8 -9 -8 -9 -11 -11 hvcurveto
+          21 -5 hlineto
+          hintmask 000100000000000000000010000000000000000000000000
+          -30 hlineto
+          -85 callsubr
+          36 24 rmoveto
+          -86 callsubr
+          15 6 9 10 -99 callsubr
+          -16 -6 -9 0 flex1
+          -85 callsubr
+          -10 -77 callsubr
+          hintmask 000100000000000000000000000000000100000000000000
+          37 hmoveto
+          hintmask 000100000000000000000000000000000000000100000000
+          15 6 9 9 vhcurveto
+          10 0 5 -9 0 -15 0 -16 -5 -105 callsubr
+          hintmask 000100000000000000000000000000000100000000000000
+          -9 -77 callsubr
+          -86 callsubr
+          -12 hmoveto
+          hintmask 000100000000000000000000000000010000000000000000
+          -81 callsubr
+          -86 callsubr
+          0 -14 4 -6 6 5 4 6 -107 callsubr
+          hintmask 000100000000000010000000000000000000000100000000
+          36 hmoveto
+          0 13 -3 6 -6 -6 -3 -6 -101 callsubr
+          -14 3 -6 6 6 3 6 -107 callsubr
+          -157 -5 rmoveto
+          0 6 4 3 4 5 3 -3 -101 callsubr
+          -5 -80 callsubr
+          37 2 -78 callsubr
+          17 -5 hlineto
+          hintmask 000100000000000010000000000000000000000100000000
+          -17 hlineto
+          -93 callsubr
+          61 -297 rmoveto
+          -84 callsubr
+          16 6 9 9 vhcurveto
+          10 0 6 -9 0 -16 -82 callsubr
+          -93 callsubr
+          -9 -77 callsubr
+          -84 callsubr
+          37 hmoveto
+          hintmask 001000000000000000000000000000000000000010000000
+          16 7 9 9 vhcurveto
+          9 0 7 -9 0 -16 0 -16 -7 -105 callsubr
+          -84 callsubr
+          -9 -7 9 16 hvcurveto
+          hintmask 100000000000000000000001000000000000000000000000
+          -75 -19 rmoveto
+          3 3 rlineto
+          hintmask 100000000000000000000100000000000000000000000000
+          -3 3 3 -3 6 hhcurveto
+          hintmask 100000000000000000000000100000000000000000000000
+          7 0 3 6 0 7 0 6 -3 3 -106 callsubr
+          -3 -3 0 -3 -3 hvcurveto
+          -3 3 rlineto
+          hintmask 001000000000000000000100000000000000000000000000
+          3 22 rlineto
+          hintmask 001000000000000000000000000010000000000000000000
+          22 -3 hlineto
+          -93 callsubr
+          -19 -16 hlineto
+          3 0 3 3 hhcurveto
+          hintmask 010000000000000000000000010000000000000000000000
+          10 0 6 -6 0 -9 0 -10 -6 -6 -106 callsubr
+          hintmask 100000000000000000000001000000000000000000000000
+          -6 -6 3 3 -3 hvcurveto
+          hintmask 100000000000000000000000000000000010000000000000
+          63 19 rmoveto
+          hintmask 100000000000000000000000000000001000000000000000
+          0 13 -3 6 -7 -3 -6 -102 callsubr
+          -16 6 -6 3 vhcurveto
+          hintmask 100000000000000000000000000000000010000000000000
+          7 3 6 16 hvcurveto
+          hintmask 100000000000000010000000000000000000000010000000
+          37 hmoveto
+          0 13 -3 6 -6 -6 -3 -102 callsubr
+          -16 3 -6 6 6 3 6 16 vhcurveto
+          -160 -6 -96 callsubr
+          -3 -3 -7 -7 -3 -3 7 -107 callsubr
+          hintmask 001000000000000010000000000000000000000000000000
+          38 3 rmoveto
+          hintmask 001000000000000000000100000000000000000000000000
+          15 -6 hlineto
+          hintmask 010000000000000010000000000000000000000000000000
+          -15 hlineto
+          endchar
+        </CharString>
       </CharStrings>
     </CFFFont>
 
@@ -282,13 +718,14 @@
   </CFF>
 
   <GSUB>
-    <Version value="1.0"/>
+    <Version value="0x00010000"/>
   </GSUB>
 
   <hmtx>
     <mtx name=".notdef" width="500" lsb="93"/>
     <mtx name="A" width="580" lsb="3"/>
     <mtx name="B" width="618" lsb="90"/>
+    <mtx name="C" width="282" lsb="50"/>
   </hmtx>
 
 </ttFont>

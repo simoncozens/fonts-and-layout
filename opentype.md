@@ -153,7 +153,7 @@ The `macStyle` value is a bit field, used, as its name implies, to determine the
 
 So a bold italic condensed font should have a `macStyle` value of `00000000 00100011` (remember that we count from the right in binary).
 
-### `hhea` and `OS/2`
+### Vertical metrics: `hhea` and `OS/2`
 
 Before this next test, we will actually add some outlines to our font: a capital A and a capital B:
 
@@ -163,29 +163,60 @@ Before this next test, we will actually add some outlines to our font: a capital
 
 After exporting the new font and converting the font again using TTX, let's have a look at the `hhea` and `OS/2` tables. These tables are used to set the global defaults when using this font in horizontal typesetting. They represent one of the more unfortunate compromises of the OpenType standard, which brought together font files from both the Windows and Mac platforms. It's a cardinal rule of data handling that you shouldn't store the same value in two different places, because then they will eventually end up either going out of sync or being used in different ways, or, as in the case of OpenType, both.
 
-First, here's the `hhea` table:
+First, here's some of the `hhea` table:
 
     <hhea>
-      <tableVersion value="1.0"/>
+      ...
       <ascent value="1000"/>
       <descent value="-200"/>
       <lineGap value="0"/>
       <advanceWidthMax value="618"/>
-      <minLeftSideBearing value="3"/>
-      <minRightSideBearing value="3"/>
-      <xMaxExtent value="578"/>
-      <caretSlopeRise value="1"/>
-      <caretSlopeRun value="0"/>
-      <caretOffset value="0"/>
-      <reserved0 value="0"/>
-      <reserved1 value="0"/>
-      <reserved2 value="0"/>
-      <reserved3 value="0"/>
-      <metricDataFormat value="0"/>
-      <numberOfHMetrics value="3"/>
+      ...
     </hhea>
 
-The ascent and descent values (the OpenType specification calls them "Ascender" and "Descender") will be used ... XXX actually this is all horrible and I can't face writing it now. Start with http://typedrawers.com/discussion/1705 when I come back to it.
+At this point let's also look at the parts of the `OS/2` table which deal with glyph metrics. Because you can't say `OS/2` in valid XML, `ttx` writes it funny:
+
+    <OS_2>
+      ...
+      <fsSelection value="00000000 01000000"/>
+      <sTypoAscender value="800"/>
+      <sTypoDescender value="-200"/>
+      <sTypoLineGap value="200"/>
+      <usWinAscent value="1000"/>
+      <usWinDescent value="200"/>
+      <sxHeight value="500"/>
+      <sCapHeight value="700"/>
+      ...
+    </OS_2>
+
+Immediately you should see that the font editor, Glyphs, has chosen to provide different values for things that seem to be the same: `ascent` in `hhea` is 1000, and so is `usWinAscent`, but `sTypoAscender` is 800. `descent` and `sTypoDescender` are -200, but `usWinDescent` is 200. Most confusingly, `lineGap` is 0 but `sTypoLineGap` is 200, and if you look into the OpenType specification, you will find that `lineGap` in `hhea` is described as "typographic line gap" and `sTypoLineGap` is described as "the typographic line gap for this font". What on earth is going on?
+
+The problem, once again, is that not only did Macintosh and Windows have their own font formats, they each had their own interpretation of how the metrics of a font should be interpreted. Things were bad enough when the only consumers of fonts were the Windows and Mac operating systems, but now word processors, page layout programs, web browsers and a wide range of other software peek into the metrics of fonts and interpret the values in their own special way. In particular, when we are talking about global scripts with glyph proportions and line spacing that can differ significantly from Latin glyphs, the default mechanisms of font browsers for computing these values may not be ideal, and they may not provide identical results across platforms. So you may well need to play with some of these values yourself.
+
+How are they used? To see what's going on, I made this special glyph in position `C`:
+
+![metrics measuring glyph](opentype/metrics.png)
+
+On my Mac, the TextEdit application seemed to struggle with this, sometimes clipping off the top of the `1000` and anything below the center of the `-200`, and sometimes maintaining it:
+
+![metrics measuring glyph](opentype/textedit.png)
+
+Safari, Firefox and Illustrator all do this:
+
+![metrics measuring glyph](opentype/safari.png)
+
+(Although Illustrator's selection extends to slightly more than 500 points below the baseline.)
+
+XXX Windows?
+
+The `usWinAscent` and `usWinDescent` values are used for text *clipping* on Windows. In other words, any contours above 1000 will be clipped.
+
+
+Here is the current best practice (distilled from a discussion on [Typedrawers](http://typedrawers.com/discussion/1705)):
+
+* The `sTypoAscender` minus the `sTypoDescender` should equal the unit square. (Usually 1000 units).
+
+* 
 
 XXX OS/2
 
@@ -252,7 +283,7 @@ We see that if the user wants Unicode codepoint `0x41`, we need to use glyph num
 
 ### The `CFF` table
 
-Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. First, we'll look at the `CFF` table which, as mentioned about, represents fonts with PostScript outlines.
+Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. First, we'll look at the `CFF` table which, as mentioned above, represents fonts with PostScript outlines.
 
 What's interesting about the `CFF` table is that its representation is "alien" to OpenType. CFF is a data format borrowed wholesale from elsewhere - Adobe invented the Compact Font Format in 1996 as a "compact" (binary) way to represent its PostScript Type 1 fonts, as opposed to the longform way of representing font data in the PostScript language. It was used since PDF version 1.2 to represent font subsets within PDF documents, and later introduced into OpenType as the representation for PS outlines.
 
