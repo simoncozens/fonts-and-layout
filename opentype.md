@@ -23,7 +23,7 @@ In other words, most of the information in a font is not the little black shapes
 
 To crack open that OTF file and look at the tables inside, we're going to use a set of Python programs called `fonttools`. `fonttools` was originally written by Just van Rossum, but is now maintained by Cosimo Lupo and a cast of hundreds. If you don't have `fonttools` already installed, you can get hold of it by issuing the following commands at a command prompt:
 
-> If you're a Mac user and you're not familiar with using a terminal emulator, pick up a copy of "Learning for OS X" by Dave Taylor. If you're a Windows user, I'm afraid you're on your own; Windows has never made it particularly easy to operate the computer through the command prompt, and it's too painful to explain it here.
+> If you're a Mac user and you're not familiar with using a terminal emulator, pick up a copy of "Learning Unix for OS X" by Dave Taylor. If you're a Windows user, I'm afraid you're on your own; Windows has never made it particularly easy to operate the computer through the command prompt, and it's too painful to explain it here.
 
     easy_install pip
     pip install fonttools
