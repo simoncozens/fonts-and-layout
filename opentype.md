@@ -211,9 +211,9 @@ Safari, Firefox and Illustrator all do this:
 
 ![metrics measuring glyph](opentype/safari.png)
 
-(Although Illustrator's selection extends to slightly more than 500 points below the baseline.)
+(Although Illustrator's selection extends to slightly more than 500 points below the baseline. *XXX why?*)
 
-XXX Need Windows test here.
+*XXX Need Windows test here.*
 
 The `usWinAscent` and `usWinDescent` values are used for text *clipping* on Windows. In other words, any contours above 1000 or below -200 units will be clipped on Windows applications. On a Mac, the relevant values for clipping are `hhea`'s `ascender` and `descender`. Mac uses `hhea`'s `lineGap` to determine line spacing. As we can see from our Safari example, there is no gap between the lines: the first line's descender at -200 units lines up perfectly with the second line's ascender at 1000 units. Finally, the `typo` values are used by layout applications to position the first baseline of a text block and set the default line spacing.
 
