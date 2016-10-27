@@ -488,6 +488,13 @@ In OpenType, each instance of a font's family lives in its own file. So Robert S
 
 Font collections provide a way of both sharing this common information and packaging families more conveniently to the user. Originally called TrueType Collections, a font collection is a single file (with the extension `.ttc`) containing multiple fonts. Each font within the collection has its own Offset Table, and this naturally allows it to share tables. For instance, a collection might share a `GSUB` table between family members; in this case, the `GSUB` entry in each member's Offset Table would point to the same location in the file.
 
+A collection is, then, a bunch of TrueType fonts all welded together, with a header on top telling you where to locate the Offset Table of each font. Here's the start of Helvetica Neue:
+
+    00000000: 7474 6366 0002 0000 0000 000b 0000 0044  ttcf...........D
+    00000010: 0000 0170 0000 029c 0000 03c8 0000 04f4  ...p............
+
+`ttcf` tells us that this is a TrueType collection, then the next four bytes tell us this using version 2.0 of the TTC file format. After that we get the number of fonts in the collection (`0x0000000b` = 11), followed by 11 offsets: the Offset Table of the first font starts at byte 0x44 of this file, the next at 0x170, and so on.
+
 ## Font variations
 
 Another, more flexible way of putting multiple family members in the same file is provided by OpenType Variable Fonts. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, variable fonts fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between - semibolds, hemi-semibolds and everything else suddenly become available. (Whether or not you believe that users really ought to have access to infinite variations of a font is entirely another matter.)
