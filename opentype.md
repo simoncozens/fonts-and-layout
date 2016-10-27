@@ -213,7 +213,7 @@ Safari, Firefox and Illustrator all do this:
 
 (Although Illustrator's selection extends to slightly more than 500 points below the baseline. *XXX why?*)
 
-*XXX Need Windows test here.*
+*XXX Need Windows test here. Also, what do the various Linux rendering things do?*
 
 The `usWinAscent` and `usWinDescent` values are used for text *clipping* on Windows. In other words, any contours above 1000 or below -200 units will be clipped on Windows applications. On a Mac, the relevant values for clipping are `hhea`'s `ascender` and `descender`. Mac uses `hhea`'s `lineGap` to determine line spacing. As we can see from our Safari example, there is no gap between the lines: the first line's descender at -200 units lines up perfectly with the second line's ascender at 1000 units. Finally, the `typo` values are used by layout applications to position the first baseline of a text block and set the default line spacing.
 
@@ -490,6 +490,139 @@ Font collections provide a way of both sharing this common information and packa
 
 ## Font variations
 
-Another, more flexible way of putting multiple family members in the same file is provided by OpenType Variable Fonts. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, variable fonts fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between.
+Another, more flexible way of putting multiple family members in the same file is provided by OpenType Variable Fonts. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, variable fonts fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between - semibolds, hemi-semibolds and everything else suddenly become available. (Whether or not you believe that users really ought to have access to infinite variations of a font is entirely another matter.)
 
-As with everything OpenType, variable fonts are achieved through additional tables; and as with everything OpenType, legacy compromises means that things are achieved in different ways depending on whether you're using PostScript or TrueType outlines. TrueType Outlines are the easiest to understand, so we'll start with these.
+As with everything OpenType, variable fonts are achieved through additional tables; and as with everything OpenType, legacy compromises means that things are achieved in different ways depending on whether you're using PostScript or TrueType outlines. TrueType outlines are the easiest to understand, so we'll start with these.
+
+But first, we have to understand interpolation and deltas. From a designer's perspective, what you do when you design a variable font doesn't really change much from an ordinary multiple master font. First, you decide on your design axes and the points on those axes that you will design; the most common axis is the weight axis - perhaps you will go from regular to bold, or you may design thin, regular and black weights and interpolate between those points. Or you may choose to work on the width axis, designing condensed, regular and extended masters. Then you draw your glyphs, and five years later you have a font.
+
+> Italic isn't a design axis; it's handled separately, for two reasons: first, you don't really want people to be producing semi-italic fonts, and second, often the italic shapes of characters are quite different to the upright shapes, so it's not possible or sensible to interpolate between them.
+
+![design spaces](opentype/varfont/designspace.svg)
+
+Once you have designed your masters, you can then interpolate instances in between those extremes; for instance, if we wanted to create a semibold instance of this font, (Noto Sans Khmer) we would take the regular and the bold and, for each point on the glyph, compute a position that lays between the corresponding points on the two masters:
+
+![interpolation](opentype/varfont/interpolation.svg)
+
+In this understanding of font variation, you have two distinct masters for each axis. Another way to represent the same information is to have one master, and a number of *deltas* for each point, which describe how to get to the other master:
+
+![deltas](opentype/varfont/deltas-1.svg)
+
+This makes it very easy to represent multiple design axes. If you're designing for both width and weight, you no longer need to keep regular, condensed, bold and bold condensed masters around. Instead you have a single master and two sets of deltas:
+
+![more deltas](opentype/varfont/deltas-2.svg)
+
+Creating a semibold condensed instance of this font requires you to do some vector mathematics: for each point, multiply the weight vector by 50% (or whatever proportion you like your semibold to be), take the product of that vector with the width vector, and apply the resulting vector to the position of the point.
+
+Let's see how this is represented. We've been using Noto Sans Khmer, so let's break that open in `ttx`:
+
+    $ ttx NotoSansKhmer-GX.ttf
+    Dumping "NotoSansKhmer-GX.ttf" to "NotoSansKhmer-GX.ttx"...
+    Dumping 'GlyphOrder' table...
+    Dumping 'head' table...
+    Dumping 'hhea' table...
+    Dumping 'maxp' table...
+    Dumping 'OS/2' table...
+    Dumping 'hmtx' table...
+    Dumping 'cmap' table...
+    Dumping 'loca' table...
+    Dumping 'glyf' table...
+    Dumping 'name' table...
+    Dumping 'post' table...
+    Dumping 'GDEF' table...
+    Dumping 'GPOS' table...
+    Dumping 'GSUB' table...
+    Dumping 'fvar' table...
+    Dumping 'gvar' table...
+
+We've got a couple more tables this time: `fvar` and `gvar`. The `fvar` table describes the design axes, their range, and where the "default" (i.e. master) is on that axis:
+
+    <fvar>
+      <Axis>
+        <AxisTag>wdth</AxisTag>
+        <MinValue>70.0</MinValue>
+        <DefaultValue>100.0</DefaultValue>
+        <MaxValue>100.0</MaxValue>
+        <AxisNameID>256</AxisNameID>
+      </Axis>
+      <Axis>
+        <AxisTag>wght</AxisTag>
+        <MinValue>26.0</MinValue>
+        <DefaultValue>90.0</DefaultValue>
+        <MaxValue>190.0</MaxValue>
+        <AxisNameID>257</AxisNameID>
+      </Axis>
+
+This font has two design axes, width and weight. (There's also a third axis in the font, a custom axis which doesn't seem to be used. So I've removed it for clarity.)
+
+The names of the axes are localised in the `name` table so that they can be displayed to users in the appropriate language. The width axis runs from compressed=70 to regular=100, and the master stored in the font represents the regular width; the weight axis runs from 26 to 190, with the master (regular weight) located at 90.
+
+> Where you start and end your axis and put your default is up to you; these values don't necessarily represent points or percentages or anything else. They're dimensionless quantities that are only interpreted in relation to each other. In this case, it looks like the width axis represents percentage width. But if you wanted to set up your design space with compressed = 1, regular = 2 and expanded = 3, it's completely your choice. However, the values you give here may be reflected in the UI offered to the users. When we come to looking at the deltas, these values get normalized: -1 represents the bottom end of the axis, 1 represents the top end, and 0 represents the *default*. (not the middle!)
+
+While the purpose of Variable Fonts is to allow the user infinite flexibility, we still want the user to have access to particular instances of the font that the designer thinks work particularly well or define a good typographic hierarchy. So the `fvar` table also includes definitions for named instances, located at specific points on the design space:
+
+    <!-- Thin -->
+    <NamedInstance subfamilyNameID="259">
+      <coord axis="wdth" value="100.0"/>
+      <coord axis="wght" value="26.0"/>
+    </NamedInstance>
+
+    ...
+
+    <!-- Condensed ExtraLight -->
+    <NamedInstance subfamilyNameID="269">
+      <coord axis="wdth" value="79.0"/>
+      <coord axis="wght" value="39.0"/>
+    </NamedInstance>
+
+Noto Sans Khmer Thin is all the way down the bottom of the weight axis, and Condensed ExtraLight is part of the way down the weight axis and almost all the way down the bottom of the width axis.
+
+Now we come to the `gvar` table, which in a TrueType outline font, stores the deltas themselves. We've been playing with KHMER LETTER LO (ល), which goes by the glyph name "uni179B". (I'm sure you can work out why.)
+
+    <gvar>
+      <version value="1"/>
+      <reserved value="0"/>
+      ...
+      <glyphVariations glyph="uni179B">
+        <tuple>
+          <coord axis="wdth" value="-1.0"/>
+          <delta pt="0" x="-141" y="-9"/>
+          <delta pt="1" x="-141" y="0"/>
+          ...
+        </tuple>
+        <tuple>
+          <coord axis="wght" value="-1.0"/>
+          <delta pt="0" x="-53" y="7"/>
+          <delta pt="1" x="-53" y="0"/>
+          ...
+        </tuple>
+
+Here are the full deltas for the bottom end of the width axis (completely condensed) and the bottom end of the weight axis (thin). To create a thin version of the letter LO, start with the regular version, and move the first point left 53 units and up 7 units. To create a condensed version, move the first point left 9 units.
+
+If you read on to the next few tuples, you will discover that our initial explanation of deltas was a little bit of a simplification, in a number of ways. First, rather than a single delta for weight, you may have find that a font gets thinner or bolder at different rates. So the delta above tells you how to make the font thin, but making the font bold is not just a matter of inverting the delta. One delta is used to travel from the regular into the light direction, but there's a separate delta used for travelling from the default in the boldness direction:
+
+      <tuple>
+        <coord axis="wght" value="1.0"/>
+        <delta pt="0" x="74" y="-5"/>
+        <delta pt="1" x="74" y="0"/>
+        ...
+      </tuple>
+
+As well as that, creating a bold condensed font is not simply a matter of blindly multiplying a bold weight delta with a condensed width delta; you may have design-specific adjustments which needs to happen when your font is both bold and condensed. This can be represented as another vector: "go this way for both bold and condensed":
+
+     <tuple>
+        <coord axis="wdth" value="-1.0"/>
+        <coord axis="wght" value="1.0"/>
+        <delta pt="0" x="-17" y="13"/>
+        <delta pt="1" x="-17" y="0"/>
+        ...
+      </tuple>
+    </glyphVariations>
+
+In other words, you have a variety of deltas, and each delta is associated with a position in the design space. When the instances are generated, the vector mathematics is done in such a way that all such delta and their end-points in *n*-dimensional design space are taken into consideration to get you to the position you want to go to.
+
+> Another simplification I've made is that your glyphs may change shape completely as they pass particular thresholds: when a dollar sign ($) goes from regular to bold, it sometimes loses the line through the middle of the curve, opting for just protrusions at the top and bottom. Variable fonts lets you flip over to another glyph after a particular threshold on the axis, but I'm not going to go into that.
+
+> If you actually need to implement variable fonts, print out the [font variations overview](https://www.microsoft.com/typography/otspec/otvaroverview.htm) and sit down with it over a cup of coffee. It's not too hard to understand.
+
+XXX CFF2
