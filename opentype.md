@@ -498,9 +498,9 @@ A collection is, then, a bunch of TrueType fonts all welded together, with a hea
 
 `ttcf` tells us that this is a TrueType collection, then the next four bytes tell us this using version 2.0 of the TTC file format. After that we get the number of fonts in the collection (`0x0000000b` = 11), followed by 11 offsets: the Offset Table of the first font starts at byte 0x44 of this file, the next at 0x170, and so on.
 
-## Font variations
+## OpenType Font Variations
 
-Another, more flexible way of putting multiple family members in the same file is provided by OpenType Variable Fonts. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, variable fonts fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between - semibolds, hemi-semibolds and everything else suddenly become available. (Whether or not you believe that users really ought to have access to infinite variations of a font is entirely another matter.)
+Another, more flexible way of putting multiple family members in the same file is provided by OpenType Font Variations. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, font variations fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between - semibolds, hemi-semibolds and everything else suddenly become available. (Whether or not you believe that users really ought to have access to infinite variations of a font is entirely another matter.)
 
 As with everything OpenType, variable fonts are achieved through additional tables; and as with everything OpenType, legacy compromises means that things are achieved in different ways depending on whether you're using PostScript or TrueType outlines. TrueType outlines are the easiest to understand, so we'll start with these.
 
