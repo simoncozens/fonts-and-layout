@@ -3,6 +3,9 @@ layout: chapter
 title: How OpenType Works
 ---
 
+* TOC
+{:toc}
+
 They say that if you enjoy sausages, you shouldn't look too carefully into how they are made, and the same is true of OpenType fonts.
 
 In this chapter we're going to look in some depth about the OpenType font format: how it actually converts the outlines, metrics and advanced typographic features of a font into a file that a computer can interpret. In an ideal world, this would be information that programmers of layout systems and font handling libraries would need, but implementation details that font designers could safely ignore.
