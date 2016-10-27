@@ -521,6 +521,8 @@ This makes it very easy to represent multiple design axes. If you're designing f
 
 Creating a semibold condensed instance of this font requires you to do some vector mathematics: for each point, multiply the weight vector by 50% (or whatever proportion you like your semibold to be), take the product of that vector with the width vector, and apply the resulting vector to the position of the point.
 
+> That was a simplification. Don't worry, we'll get more complex later.
+
 Let's see how this is represented. We've been using Noto Sans Khmer, so let's break that open in `ttx`:
 
     $ ttx NotoSansKhmer-GX.ttf
