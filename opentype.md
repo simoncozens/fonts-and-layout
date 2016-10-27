@@ -507,7 +507,7 @@ But first, we have to understand interpolation and deltas. From a designer's per
 
 ![design spaces](opentype/varfont/designspace.svg)
 
-Once you have designed your masters, you can then interpolate instances in between those extremes; for instance, if we wanted to create a semibold instance of this font, (Noto Sans Khmer) we would take the regular and the bold and, for each point on the glyph, compute a position that lays between the corresponding points on the two masters:
+Once you have designed your masters, you can then interpolate instances in between those extremes; for instance, if we wanted to create a semibold instance of this font, (Noto Sans Khmer) we would take the regular and the bold masters and, for each point on the glyph, compute a position that lays some proportion of the way between the corresponding points on the two masters:
 
 ![interpolation](opentype/varfont/interpolation.svg)
 
@@ -615,7 +615,7 @@ If you read on to the next few tuples, you will discover that our initial explan
         ...
       </tuple>
 
-As well as that, creating a bold condensed font is not simply a matter of blindly multiplying a bold weight delta with a condensed width delta; you may have design-specific adjustments which needs to happen when your font is both bold and condensed. This can be represented as another vector: "go this way for both bold and condensed":
+As well as that, creating a bold condensed font is not simply a matter of blindly multiplying a bold weight delta with a condensed width delta; you may have design-specific adjustments which need to happen when your font is both bold and condensed. This can be represented as another vector: "go this way for both bold and condensed":
 
      <tuple>
         <coord axis="wdth" value="-1.0"/>
@@ -626,7 +626,7 @@ As well as that, creating a bold condensed font is not simply a matter of blindl
       </tuple>
     </glyphVariations>
 
-In other words, you have a variety of deltas, and each delta is associated with a position in the design space. When the instances are generated, the vector mathematics is done in such a way that all such delta and their end-points in *n*-dimensional design space are taken into consideration to get you to the position you want to go to.
+In other words, you have a variety of deltas, and each delta is associated with a position in the design space. When the instances are generated, each set of deltas is given a weight representing how useful it is in getting to the point in design space you're aiming at. So if you want a semibold instance, deltas which make the font lighter are no use at all, so have their weight set to zero. If you want a semibold condensed, deltas which make the font bold, condensed and both bold and condensed at the same time will all be taken into account in varying proportions according to their usefulness. The vectors multiplied by their weights, and applied to the default point, and it all works out in the end.
 
 > Another simplification I've made is that your glyphs may change shape completely as they pass particular thresholds: when a dollar sign ($) goes from regular to bold, it sometimes loses the line through the middle of the curve, opting for just protrusions at the top and bottom. Variable fonts lets you flip over to another glyph after a particular threshold on the axis, but I'm not going to go into that.
 
