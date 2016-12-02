@@ -2,7 +2,7 @@
 - { fn: concepts, title: "Font Concepts "}
 - { fn: unicode, title: "The Unicode Standard", some: 1}
 - { fn: opentype, title: "How OpenType Works", some: 1}
-- { fn: feature, title: "Advanced OpenType Capabilities",}
+- { fn: features, title: "Advanced OpenType Capabilities",}
 - { fn: localisation, title: "OpenType for Global Scripts"}
 - { fn: feature, title: "Advanced Feature Programming "}
 - { fn: layout, title: "Layout Challenges in Global Type "}

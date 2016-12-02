@@ -77,7 +77,7 @@ All apart from the first two tables in our file are required in every TrueType a
 |`post`|information used when downloading fonts to PostScript printers|
 |------|-----------------------------|
 
-The first table, `CFF`, is required if the outlines of the font are represented as PostScript CFF; a font using TrueType representation will have a different set of tables instead (`cvt`, `fpgm`, `glyf`, `loca` and `prep`). The second table in our list, `GSUB`, is one of the more exciting ones; it's the glyph substitution font which, together with `GPOS` (glyph positioning), stores most of the OpenType smarts.
+The first table, `CFF`, is required if the outlines of the font are represented as PostScript CFF; a font using TrueType representation will have a different set of tables instead (`cvt`, `fpgm`, `glyf`, `loca` and `prep`). The second table in our list, `GSUB`, is one of the more exciting ones; it's the glyph substitution font which, together with `GPOS` (glyph positioning), stores most of the OpenType smarts. We will discuss them in the next chapter.
 
 So those are the tables available to us. Now let us examine those tables by turning the whole font into an XML document:
 
@@ -642,3 +642,5 @@ In other words, you have a variety of deltas, and each delta is associated with 
 > If you actually need to implement variable fonts, print out the [font variations overview](https://www.microsoft.com/typography/otspec/otvaroverview.htm) and sit down with it over a cup of coffee. It's not too hard to understand.
 
 XXX CFF2
+
+# SVG Fonts

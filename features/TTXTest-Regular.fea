@@ -1,0 +1,40 @@
+table OS/2 {
+	TypoAscender 800;
+	TypoDescender -200;
+	TypoLineGap 200;
+	winAscent 1000;
+	winDescent 200;
+	WeightClass 400;
+	WidthClass 5;
+	WidthClass 5;
+	FSType 8;
+	XHeight 500;
+	CapHeight 700;
+} OS/2;
+table hhea {
+	CaretOffset 0;
+	Ascender 1000;
+	Descender -200;
+	LineGap 0;
+} hhea;
+table head { 
+	FontRevision 001.000;
+} head;
+table name {
+	nameid 1 1 "TTX Test";
+	nameid 1 3 1 1033 "TTX Test";
+	nameid 2 1 "Regular";
+	nameid 2 3 1 1033 "Regular";
+	nameid 4 1 "TTX Test Regular";
+	nameid 4 3 1 1033 "TTX Test Regular";
+	nameid 9 1 "Simon Cozens";
+	nameid 9 3 1 1033 "Simon Cozens";
+} name;
+
+feature kern {
+	lookup kern1_latin {
+	lookupflag IgnoreMarks;
+		pos A B -50;
+	} kern1_latin;
+} kern;
+
