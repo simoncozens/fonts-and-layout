@@ -8,6 +8,8 @@ title: OpenType Features
 
 In the previous chapter we looked at some of the data tables hiding inside an OpenType font. And let's face it, they weren't all that interesting - metrics, character mappings, a few Bézier splines or drawing instructions. The really cool part about OpenType (and its one-time rival, Apple Advanced Typography) is the ability to *program* the font. OpenType's collaborative model, which we discussed in our chapter on history, allows the font to give instructions to the shaping engine and control its operation.
 
+> When I use the word "instruction" in this chapter, I'm using the term in the computer programming sense - programs are made up of instructions which tell the computer what to do, and we want to be telling our shaping engine what to do. In the font world, the word "instruction" also has a specific sense related to hinting of TrueType outlines, which we'll cover in the chapter on hinting.
+
 Specifically, two tables within the font - the `GPOS` and `GSUB` tables - provide for a wide range of context-sensitive font transformations. `GPOS` contains instructions for altering the position of glyph. The canonical example of context-sensitive repositioning is *kerning*, which modifies the space between two glyphs depending on what those glyphs are, but `GPOS` allows for many other kinds of repositioning instructions. The other table, `GSUB`, contains instructions for substituting some glyphs for others based on certain conditions. The obvious example here is *ligatures*, which substitutes a pair (or more) of glyphs for another: the user types "f" and then "i" but rather than displaying those two separate glyphs, the font tells the shaping engine to fetch the single glyph "ﬁ" instead. But once again, `GSUB` allows for many, many interesting substitutions - some of which which help us designing fonts for complex scripts.
 
 ## Features, lookups and rules
@@ -28,9 +30,9 @@ Now, within the Glyphs editor we will add negative 50 points of kerning between 
 
 We'll now dump out the font again with `ttx`, but this time just the `GPOS` table:
 
-  $ ttx -t GPOS TTXTest-Regular.otf
-  Dumping "TTXTest-Regular.otf" to "TTXTest-Regular.ttx"...
-  Dumping 'GPOS' table...
+    $ ttx -t GPOS TTXTest-Regular.otf
+    Dumping "TTXTest-Regular.otf" to "TTXTest-Regular.ttx"...
+    Dumping 'GPOS' table...
 
 Here is what we get:
 
