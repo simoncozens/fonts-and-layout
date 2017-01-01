@@ -1,6 +1,6 @@
 ---
 layout: chapter
-title: Advanced OpenType Capabilities
+title: OpenType Features
 ---
 
 * TOC

@@ -2,9 +2,9 @@
 - { fn: concepts, title: "Font Concepts "}
 - { fn: unicode, title: "The Unicode Standard", some: 1}
 - { fn: opentype, title: "How OpenType Works", some: 1}
-- { fn: features, title: "Advanced OpenType Capabilities",}
+- { fn: features, title: "OpenType Features", some: 1}
 - { fn: localisation, title: "OpenType for Global Scripts"}
-- { fn: feature, title: "Advanced Feature Programming "}
+- { fn: adv-features, title: "Advanced Feature Programming "}
 - { fn: layout, title: "Layout Challenges in Global Type "}
 - { fn: hint, title: "Rasterisation and Hinting "}
 - { fn: web, title: "Fonts on the Web "}
