@@ -1,0 +1,28 @@
+\begin[papersize=140pt x 70pt]{document}
+\script[src=packages/rules]
+\script[src=packages/rebox]
+\script[src=packages/features]\nofolios
+\begin{raggedright}
+No pos feature: \rebox[width=0pt]{\hrule[height=0.25pt,width=25pt]}\font[filename="TTXTest-Regular.otf"]{ABAB}
+
+pos A B <150 0 0 0>; \rebox[width=0pt]{\hrule[height=0.25pt,width=25pt]}
+\font[filename="TTXTest-Regular.otf"]{
+\add-font-feature[StylisticSet=1]ABAB \remove-font-feature[StylisticSet=1]}\par
+
+pos A B <0 150 0 0>;
+\rebox[width=0pt]{\hrule[height=0.25pt,width=25pt]}%
+\font[filename="TTXTest-Regular.otf"]{%
+\add-font-feature[StylisticSet=2]ABAB \remove-font-feature[StylisticSet=2]}\par
+
+pos A B <0 0 150 0>;
+\rebox[width=0pt]{\hrule[height=0.25pt,width=25pt]}%
+\font[filename="TTXTest-Regular.otf"]{%
+\add-font-feature[StylisticSet=3]ABAB \remove-font-feature[StylisticSet=3]}\par
+
+pos A B <0 0 0 150>;
+\rebox[width=0pt]{\hrule[height=0.25pt,width=25pt]}%
+\font[filename="TTXTest-Regular.otf"]{%
+\add-font-feature[StylisticSet=4]ABAB \remove-font-feature[StylisticSet=4]
+}
+\end{raggedright}
+\end{document}

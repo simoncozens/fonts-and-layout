@@ -10,7 +10,7 @@ In the previous chapter we looked at some of the data tables hiding inside an Op
 
 > When I use the word "instruction" in this chapter, I'm using the term in the computer programming sense - programs are made up of instructions which tell the computer what to do, and we want to be telling our shaping engine what to do. In the font world, the word "instruction" also has a specific sense related to hinting of TrueType outlines, which we'll cover in the chapter on hinting.
 
-Specifically, two tables within the font - the `GPOS` and `GSUB` tables - provide for a wide range of context-sensitive font transformations. `GPOS` contains instructions for altering the position of glyph. The canonical example of context-sensitive repositioning is *kerning*, which modifies the space between two glyphs depending on what those glyphs are, but `GPOS` allows for many other kinds of repositioning instructions. The other table, `GSUB`, contains instructions for substituting some glyphs for others based on certain conditions. The obvious example here is *ligatures*, which substitutes a pair (or more) of glyphs for another: the user types "f" and then "i" but rather than displaying those two separate glyphs, the font tells the shaping engine to fetch the single glyph "ﬁ" instead. But once again, `GSUB` allows for many, many interesting substitutions - some of which which help us designing fonts for complex scripts.
+Specifically, two tables within the font - the `GPOS` and `GSUB` tables - provide for a wide range of context-sensitive font transformations. `GPOS` contains instructions for altering the position of glyph. The canonical example of context-sensitive repositioning is *kerning*, which modifies the space between two glyphs depending on what those glyphs are, but `GPOS` allows for many other kinds of repositioning instructions. The other table, `GSUB`, contains instructions for substituting some glyphs for others based on certain conditions. The obvious example here is *ligatures*, which substitutes a pair (or more) of glyphs for another: the user types "f" and then "i" but rather than displaying those two separate glyphs, the font tells the shaping engine to fetch the single glyph "ﬁ" instead. But once again, `GSUB` allows for many, many interesting substitutions - some of which help us designing fonts for complex scripts.
 
 ## Features, lookups and rules
 
@@ -20,9 +20,9 @@ When a shaping engine processes a run of text, it first determines which feature
 
 We'll start our investigation of features once again by experiment, and from the simplest possible source. As we mentioned, the canonical example of a `GPOS` feature is kerning. (The `kern` feature - again one which is generally turned on by default by the font.) We take our test font from the previous chapter. Right now it has no `GPOS` table, and the `GSUB` table contains no features, lookups or rules; just a version number:
 
-  <GSUB>
-    <Version value="0x00010000"/>
-  </GSUB>
+    <GSUB>
+      <Version value="0x00010000"/>
+    </GSUB>
 
 Now, within the Glyphs editor we will add negative 50 points of kerning between the characters A and B:
 
@@ -93,7 +93,9 @@ There are a few ways we could do this. One user-friendly way is to use the [Font
 
 ![fontforge](features/fontforge.png)
 
-Another is to use a script using the FontTools library we mentioned in the previous chapter to decompile the `GPOS` and `GSUB` tables back into feature language; one such script is provided by Lasse Fisker, and called [ft2fea](https://github.com/Tarobish/Mirza/blob/gh-pages/Tools/ftSnippets/ft2fea.py). But while these worked nicely for more complex font files, neither of them worked on our simple test font, so instead, I went with the absolute easiest way - when exporting a file, Glyphs writes out a feature file and passes it to AFDKO to compile the features. Thankfully, it leaves these files sitting around afterwards, and so in `Library/Application Support/Glyphs/Temp/TTXTest-Regular/features.fea`, I find the following:
+Another is to use a script using the FontTools library we mentioned in the previous chapter to decompile the `GPOS` and `GSUB` tables back into feature language; one such script is provided by Lasse Fisker, and called [ft2fea](https://github.com/Tarobish/Mirza/blob/gh-pages/Tools/ftSnippets/ft2fea.py).
+
+But while these worked nicely for more complex font files, neither of them worked on our simple test font, so instead, I went with the absolute easiest way - when exporting a file, Glyphs writes out a feature file and passes it to AFDKO to compile the features. Thankfully, it leaves these files sitting around afterwards, and so in `Library/Application Support/Glyphs/Temp/TTXTest-Regular/features.fea`, I find the following:
 
     table OS/2 {
       TypoAscender 800;
@@ -139,9 +141,9 @@ This tells us that when we have two "A" glyphs together, there is a 580 unit adv
     $ hb-shape TTXTest-Regular.otf 'AB'
     [A=0+530|B=1+618]
 
-when we have an "A" and a "B", the advance width of the "A" is only 530 units. In other words, the "B" is positioned 50 units left of where it would normally be placed. In other other words, our kern worked.
+when we have an "A" and a "B", the advance width of the "A" is only 530 units. In other words, the "B" is positioned 50 units left of where it would normally be placed; the "A" has, effectively, got 50 units narrower. In other other words, our kern worked.
 
-We didn't need to tell HarfBuzz to do any kerning - the font specifies that the `kern` feature is on by default. We can explicitly turn it off by passing the `--features` option to `hb-shape`:
+We didn't need to tell HarfBuzz to do any kerning - the `kern` feature is on by default. We can explicitly turn it off by passing the `--features` option to `hb-shape`:
 
     $ hb-shape --features="-kern" TTXTest-Regular.otf 'AB'
     [A=0+580|B=1+618]
@@ -174,7 +176,66 @@ Let's look at another simple positioning feature, as way to understand the few m
 First, an example by Yannis Haralambous, in his *Fonts and Encodings*: 
 
 
-Second, if we look at the Devanagari glyph sequence "DHA UUE NA UUE" (दॗ धॗ - I don't think this means anything) in Noto Sans Devangari, we will see that the 
+Second, if we look at the Devanagari glyph sequence "NA UUE LLA UUE DA UUE " (नॗ ळॗ दॗ) in Noto Sans Devangari:
+
+![](features/noto.svg)
+
+We see that in the case of the "NA UUE" and "LLA UUE" combinations, the vowel sign UUE is normally positioned at a fixed distance below the headline, regardless of the depth of the base character. (So we're not using mark to base and anchors here, for those of you who have read ahead.)
+
+However, if we attached the vowel sign to the "DA", we'd get a collision with the DA's curly tail. So in a DA+UUE sequence, we have to do a bit of *vertical* kerning: move the vowel sign down a bit when applied to a long descender. Here's the code to do that (which I've simplified to make it more readable):
+
+    feature dist {
+      script dev2;
+      language dflt;
+      @longdescenders = [
+        \uni091D # JHA (झ)
+        \uni0926 # DA (द)
+        # And various rakar form ligatures
+        \uni0916_uni094D_uni0930.rkrf \uni091D_uni094D_uni0930.rkrf
+        \uni0926_uni094D_uni0930.rkrf ];
+      pos @longdescenders 0 \uni0956 <0 -90 0 0>; # ॖ
+      pos @longdescenders 0 \uni0957 <0 -145 0 0>; # ॗ
+    }
+
+What are we doing here? We are defining a feature called `dist`, which is a little like `kern` but for adjusting the distances between pre- and post-base marks and their base characters. It applies to the script "Devanagari v.2" - this is another one of those famous OpenType compromises; Microsoft's old Indic shaper used the script tag `deva` for Devanagari, but when they came out with a new shaper, the way to select the new behavior was to use a new language tag, `dev2`. For any language system using this script, we apply the following rules: when a long descender has a UUE attached, the UUE mark is shifted by 145 units downwards.
+
+When we kerned two characters horizontally, we did this:
+
+  pos @Alike B -50;
+
+The `-50` in that rule was a value record, a way of specifying a distance in Opentype feature rules. A bare number like this as a value record is interpreted as shifting the X advance by the given number of units.
+
+Now we are using a different form of the `pos` instruction *and* a different form of the value record:
+
+    pos @longdescenders 0 \uni0956 <0 -90 0 0>;
+
+
+Let's take the different form of the `pos` instruction first. Whereas the three-argument form (`glyph glyph distance`) applied the value record to the first glyph, this four-argument form (`glyphA distanceA glyphB distanceB`) allows you to alter the position and advance of both glyphs (or glyph sets) independently. To take a stupid example:
+
+    pos A 0 B 50
+
+What does this do? When "B" follows "A" in a text, we add 50 units of advance to the "B", opening up the space between "B" and whatever glyph follows it.
+
+But in our Devanagari example, we don't want to move the mark across - we want to move it down. Enter the second form of the value record:
+
+    <xPos yPos xAdvance yAdvance>
+
+Now we have much more flexibility than just altering the horizontal advance: we can change the glyph's position and advance, independently, in two dimensions. Let's have a look at some examples to see how this works. I added the following stylistic set features to the test "A B" font from the previous chapter:
+
+    feature ss01 { pos A B <150 0 0 0>; } ss01 ;
+    feature ss02 { pos A B <0 150 0 0>; } ss02 ;
+    feature ss03 { pos A B <0 0 150 0>; } ss03 ;
+    feature ss04 { pos A B <0 0 0 150>; } ss04 ;
+
+And now see what effect each of these features has:
+
+![](features/value-records.png)
+
+From this it's easy to see that the first two numbers in the value record simply shift where the glyph is drawn, with no impact on what follows. Imagine the glyph "A" positioned as normal, but then after the surrounding layout has been done, the glyph is picked up and moved up or to the right.
+
+The third example, which we know as kerning, makes the glyph conceptually wider. The advance of the "A" is extended by 150 units, increasing its right sidebearing; changing the advance *does* affect the positioning of the glyphs which follow it.
+
+Finally, you should be able to see that the fourth example, changing the vertical advance, does absolutely nothing. You might have hoped that it would change the position of the baseline for the following glyphs, and for some scripts that might be quite a nice feature to have, but the sad fact of the matter is that applications doing horizontal layout don't take any notice of the font's vertical advances (and vice versa) and just assume that the baseline is constant. Oh well, it was worth a try.
 
 ### More about the rule application process
 
