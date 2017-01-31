@@ -187,6 +187,8 @@ A tiny minority of writing systems, such as those based on the Latin alphabet, h
 
 The classic example is German. When the sharp-s character U+00DF (ß) is uppercased, it becomes the *two* characters "SS". There is clearly a round-tripping problem here, because when the characters "SS" are downcased, they become "ss", not ß. For more fun, Unicode also defines the character U+1E9E, LATIN CAPITAL LETTER SHARP S (ẞ), which downcases to ß.
 
+> During the writing of this book, the Council for German Orthography (*Rat für deutsche Rechtschreibung*) has recommended that the LATIN CAPITAL LETTER SHARP S be included in the German alphabet as the uppercase version of ß. The Unicode Standard may well soon catch up.
+
 The other classic example is Turkish. The ordinary Latin small letter "i" (U+0069) normally uppercases to "I" (U+0049) - except when the document is written in Turkish or Azerbaijani, when it uppercases to "İ". This is because there is another letter used in those languages, LATIN SMALL LETTER DOTLESS I (U+1031, ı), which uppercases to "I". So case conversion needs to be aware of the linguistic background of the text.
 
 As well as depending on language, case conversion also depends on context. GREEK CAPITAL LETTER SIGMA (Σ) downcases to GREEK SMALL LETTER SIGMA (σ) except at the end of a word, in which case it downcases to ς, GREEK SMALL LETTER FINAL SIGMA.
@@ -196,5 +198,67 @@ Another example comes from the fact that Unicode may have a *composed form* for 
 Which seems like as good a time as any to talk about combining characters, decomposition and normalization.
 
 ## Normalization and decomposition
+
+The Unicode Standard has a number of stated design goals: to be *universal*, in the sense that every character in every script likely to be used on computer has an encoding; to be *efficient*, such that algorithms used by computers to input and output Unicode characters do not require too much state or overhead; and to be *unambiguous*, in that every Unicode codepoint represents the same character.
+
+But it also has an unstated design goal, which is the unstated design goal of pretty much every well-behaved piece of software engineering: *backward compatibility*. Unicode wants to maintain compatibility with all previous encoding standards, so that old documents can be reliably converted to and from Unicode without ambiguity. To a first approximation, this means every character that was ever assigned a codepoint in some encoding should be assigned a unique codepoint in Unicode.
+
+This contrasts somewhat with the goal of unambiguity, as there can be multiple different ways to form a character. For instance, consider the  character n̈ (Latin small letter n with diaeresis). It occurs in Jacaltec, Malagasy, Cape Verdean Creole, and most notably, *This Is Spın̈al Tap*. Despite this obvious prominence, it is not considered noteworthy enough to be encoded in Unicode as a distinct character, and so has to be encoded using *combining characters*.
+
+A combining character is a mark that attaches to a base character; in other words, a diacritic. To encode n̈, we take LATIN SMALL LETTER N (U+006E) and follow it with COMBINING DIAERESIS (U+0308). The layout system is responsible for arranging for those two characters to be displayed as one.
+
+> This obviously walks all over the "efficiency" design goal - applications which process text character-by-character must now be aware that something which visually looks like one character on the page, and semantically refers to one character in text, is actually made up of *two* characters in a string, purely as an artifact of Unicode's encoding rules. Poorly-written software can end up separating the two characters and processing them independently, instead of treating them as one indivisible entity.
+
+Now consider the character ṅ (Latin small letter n with dot above). Just one dot different, but a different story entirely; this is used in the transliteration of Sanskrit, and as such was included in pre-Unicode encodings such as CS/CSX (Wujastyk, D., 1990, *Standardization of Sanskrit for Electronic Data Transfer and Screen Representation*, 8th World Sanskrit Conference, Vienna), where it was assigned codepoint 239. Many electronic versions of Sanskrit texts were prepared using the character, and so when it came to encoding it in Unicode, the backward compatibility goal meant that it needed to be encoded as a separate character, U+1E45.
+
+But of course, it could equally be represented in just the same way as n̈: you can form a ṅ by following a LATIN SMALL LETTER N (U+006E) with a COMBINING DOT ABOVE (U+0307). Two possible ways to encode ṅ, but only one possible way to encode n̈. So much for "unambiguous": the two strings "U+006E U+0307" and "U+1E45" represent the same character, but are not equal.
+
+But wait - and you're going to hear this a lot when it comes to Unicode - it gets worse! The sign for an Ohm, the unit of electrical resistance, is Ω (U+2126 OHM SIGN). Now while a fundamental principle of Unicode is that *characters encode semantics, not visual representation*, this is clearly in some sense "the same as" Ω. (U+03A9 GREEK CAPITAL LETTER OMEGA) They are semantically different but they happen to look the same; and yet, let's face it, from a user perspective it would be exceptionally frustrating if you searched in a string for a Ω but you didn't find it because the string contained a Ω instead.
+
+The way that Unicode deals with both of these problem is to define one of the encodings to be *canonical*. The Standard also defines two operations: *Canonical Decomposition* and *Canonical Composition*. Replacing each character in a string with its canonical form is called *normalization*.
+
+> There's also a "compatibility decomposition", for characters which are very similar but not precisely equivalent: ℍ (U+210D DOUBLE-STRUCK CAPITAL H) can be simplified to a Latin capital letter H. But the compatibility normalizations are rarely used, so we won't go into them here.
+
+The simplest way of doing normalization is called Normalization Form D, or NFD. This just applies canonical decomposition, which means that every character which can be broken up into separate components gets broken up. As usual, the Unicode Database has all the information about how to decompose characters.
+
+Let's take up our example again of GREEK CAPITAL LETTER IOTA WITH DIALYTIKA AND TONOS, which is not encoded directly in Unicode. Suppose we decide to encode it as U+0399 GREEK CAPITAL LETTER IOTA followed by U+0344 COMBINING GREEK DIALYTIKA TONOS, which seems like a sensible way to do it. When we apply canonical decomposition, we find that the Unicode database specifies a decomposition U+0344 - it tells us that the combining mark breaks up into two characters: U+0308 COMBINING DIAERESIS and U+0301 COMBINING ACUTE ACCENT.
+
+|---
+||
+|-------:|:------:|:--:|:--------:|
+| Input string | Ι |  ̈́ |
+| |  0399 | 0344 |
+
+|---
+||
+|-------:|:------:|:--:|:--------:|
+| NFD | Ι |  ̈ |  ́ |
+| |  0399 | 0308 | 0301 |
+|-------|--------|--------|
+
+NFD is good enough for most uses; if you are comparing two strings and they have been normalized to NFD, then checking if the strings are equal will tell you if you have the same characters. However, the Unicode Standard defines another step: if you apply canonical composition to get characters back into their preferred form, you get Normalization Form C. NFC is the recommended way of storing and exchanging text. When we apply canonical composition to our string, the iota and the diaresis combine to form U+03AA GREEK CAPITAL LETTER IOTA WITH DIALYTIKA, and the combining acute accent is left on its own:
+
+|---
+||
+|-------:|:------:|:--:|:--------:|
+| Input string | Ι |  ̈́ |
+| |  0399 | 0344 |
+
+|---
+||
+|-------:|:------:|:--:|:--------:|
+| NFD | Ι |  ̈ |  ́ |
+| |  0399 | 0308 | 0301 |
+|-------|--------|--------|
+
+
+|---
+||
+|-------:|:------:|:--:|:--------:|
+| NFC | Ϊ |  ́ |
+| |  03AA | 0301 |
+|-------|--------|--------|
+
+Note that this is an entirely different string to our input, even though it represents the same text! But the process of normalization provides an unambiguous representation of the text, a way of creating a "correct" string that can be used in comparisons, searches and so on.
 
 ## ICU
