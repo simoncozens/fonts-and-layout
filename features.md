@@ -237,13 +237,18 @@ The third example, which we know as kerning, makes the glyph conceptually wider.
 
 Finally, you should be able to see that the fourth example, changing the vertical advance, does absolutely nothing. You might have hoped that it would change the position of the baseline for the following glyphs, and for some scripts that might be quite a nice feature to have, but the sad fact of the matter is that applications doing horizontal layout don't take any notice of the font's vertical advances (and vice versa) and just assume that the baseline is constant. Oh well, it was worth a try.
 
+But at least we now have all the pieces we need to contextually move a mark down a bit from its usual position under a base character: a four-argument `pos` instruction which lets us move the second character in a pair, and a four-element value record which lets us move things up and down. Hence:
+
+    pos @longdescenders 0 \uni0956 <0 -90 0 0>;
+
 ### More about the rule application process
 
 ### Lookups and Rules
 
+### Ligatures
+
 f_i in feature language
 
-### Ligatures
 ### Small caps
 ### Superscript / Subscript
 ### Stylistic Alternates
