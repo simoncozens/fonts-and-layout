@@ -1,4 +1,4 @@
-- {fn: history, title: "A brief history of type"}
+- {fn: history, title: "A brief history of type", some: 1}
 - { fn: concepts, title: "Font Concepts "}
 - { fn: unicode, title: "The Unicode Standard", some: 1}
 - { fn: opentype, title: "How OpenType Works", some: 1}
