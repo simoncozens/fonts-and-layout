@@ -261,4 +261,10 @@ NFD is good enough for most uses; if you are comparing two strings and they have
 
 Note that this is an entirely different string to our input, even though it represents the same text! But the process of normalization provides an unambiguous representation of the text, a way of creating a "correct" string that can be used in comparisons, searches and so on.
 
+> XXX Should talk about `ccmp` feature here.
+
 ## ICU
+
+For those of you reading this book because you're planning on developing applications or libraries to handle complex text layout, there's obviously a lot of things in this chapter that you need to implement: UTF-8 encoding and decoding, correct case conversion, decomposition, normalization, and so on.
+
+These days, most programming languages will have a standard set of routines to get you some of the way - at the least you can expect UTF-8 encoding support. For the rest, the [ICU Project](http://site.icu-project.org) is a set of open-source libraries maintained by IBM (with contributions by many others, of course).
