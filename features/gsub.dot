@@ -1,0 +1,240 @@
+
+digraph structs {
+  overlap = false;
+splines = true;
+rankdir =LR;
+   graph [fontname = "Abel"];
+ node [fontname = "Abel"];
+ edge [fontname = "Abel"];
+    node [shape=plaintext];
+    script [label=<
+<TABLE BORDER="3" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2"><B>Script List</B></TD></TR>
+  <TR><TD>scriptCount</TD><TD>2</TD></TR>
+  <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD COLSPAN="2"><B>ScriptRecords</B></TD></TR>
+      <TR><TD><I>scriptTag</I></TD><TD><I>scriptOffset</I></TD></TR>
+      <TR><TD>DFLT</TD><TD PORT="dflt"></TD></TR>
+      <TR><TD>ARAB</TD><TD PORT="arab"></TD></TR>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+    >];
+    st1 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Script Table 1</B></TD></TR>
+  <TR><TD COLSPAN="2" PORT="defaultLangSys">defaultLangSys</TD></TR>
+  <TR><TD>langSysCount</TD><TD>0 <I>(Excludes default)</I></TD></TR>
+  <TR><TD COLSPAN="2"><I>LangSysRecords table empty</I></TD></TR>
+</TABLE>
+>];
+
+
+    st2 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+
+  <TR><TD COLSPAN="2" PORT="head"><B>Script Table 2</B></TD></TR>
+  <TR><TD COLSPAN="2" PORT="defaultLangSys2">defaultLangSys</TD></TR>
+  <TR><TD>langSysCount</TD><TD>2<I>(Excludes default)</I></TD></TR>
+  <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD COLSPAN="2"><B>LangSysRecords</B></TD></TR>
+      <tr><TD><I>langSysTag</I></TD><TD><I>langSysOffset</I></TD></tr>
+      <tr><TD>URD </TD><TD  PORT="urd"></TD></tr>
+      <tr><TD>FAR </TD><TD PORT="far"></TD></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+    lst1 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Language System Table 1</B></TD></TR>
+  <TR><TD>lookupOrder</TD><TD>NULL</TD></TR>
+  <TR><TD>requiredFeatureIndex</TD><TD>0xFFFF</TD></TR>
+  <TR><TD>featureIndexCount</TD><TD>1</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD>featureIndices</TD></TR>
+      <tr><TD PORT="featureList">.</TD></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+  >];
+
+/*
+  lst2 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Language System Table 2</B></TD></TR>
+  <TR><TD COLSPAN="2">...</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD>featureIndices</TD></TR>
+      <tr><TD PORT="featureList">.</TD></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+  lst3 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Language System Table 3</B></TD></TR>
+  <TR><TD COLSPAN="2">...</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD>featureIndices</TD></TR>
+      <tr><TD PORT="featureList">.</TD></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+*/
+
+    featureList [label=<
+<TABLE BORDER="3" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2"><B>Feature List Table</B></TD></TR>
+  <TR><TD>featureCount</TD><TD>3</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD COLSPAN="2"><B>Feature Records</B></TD></TR>
+      <tr><TD><I>featureTag</I></TD><TD><I>featureOffset</I></TD></tr>
+      <tr><TD PORT="liga">liga</TD><TD PORT="ligaOff"><I>.</I></TD></tr>
+      <tr><TD PORT="locl1">locl</TD><TD><I>.</I></TD></tr>
+      <tr><TD PORT="locl2">locl</TD><TD><I>.</I></TD></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+  feat1 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Feature Table</B></TD></TR>
+  <TR><TD>featureParams</TD><TD>NULL</TD></TR>
+  <TR><TD>lookupIndexCount</TD><TD>1</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD><B>Lookup List Indices</B></TD></TR>
+      <tr><td PORT="index1"><I>.</I></td></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+  lookupList [label=<
+<TABLE BORDER="3" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Lookup List Table</B></TD></TR>
+  <TR><TD>lookupCount</TD><TD>1</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD><B>Lookup Indices</B></TD></TR>
+      <tr><td PORT="ll1"><I>.</I></td></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+
+  lookup1 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Lookup Table 1</B></TD></TR>
+  <TR><TD>lookupType</TD><TD>4</TD></TR>
+  <TR><TD>lookupFlag</TD><TD>0x00C</TD></TR>
+  <TR><TD>subTableCount</TD><TD>1</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD><B>Lookup Subtables</B></TD></TR>
+      <tr><td PORT="ll1s"><I>.</I></td></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+lig1 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Ligature Sustitution Subtable 1</B></TD></TR>
+  <TR><TD>substFormat</TD><TD>1</TD></TR>
+  <TR><TD>coverageOffset</TD><TD PORT="coverage"></TD></TR>
+  <TR><TD>ligatureSetCount</TD><TD>1</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD><B>Ligature Set Offsets</B></TD></TR>
+      <tr><td PORT="ligsetoff1"><I>.</I></td></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+coverage [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Coverage Table</B></TD></TR>
+  <TR><TD>coverageFormat</TD><TD>1</TD></TR>
+  <TR><TD>glyphCount</TD><TD>1</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD><B>Glyph Array</B></TD></TR>
+      <tr><td>247 (/f)</td></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>]
+
+ligatureset [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>LigatureSet Table</B></TD></TR>
+  <TR><TD>ligatureCount</TD><TD>2</TD></TR>
+    <TR><TD COLSPAN="2">
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+      <TR><TD><B>Ligature Offsets</B></TD></TR>
+      <tr><td PORT="fiLigature">.</td></tr>
+      <tr><td PORT="ffiLigature">.</td></tr>
+    </TABLE>
+  </TD></TR>
+</TABLE>
+>];
+
+fiLigature [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="2" PORT="head"><B>Ligature</B></TD></TR>
+  <TR><TD>ligatureGlyph</TD><TD>382 (/fi)</TD></TR>
+  <TR><TD>componentCount</TD><TD>1</TD></TR>
+  <TR><TD>componentGlyphIds</TD><TD>256 (/i)</TD></TR>
+</TABLE>
+>];
+
+ffiLigature [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD COLSPAN="3" PORT="head"><B>Ligature</B></TD></TR>
+  <TR><TD>ligatureGlyph</TD><TD COLSPAN="2">380 (/f_f_i)</TD></TR>
+  <TR><TD>componentCount</TD><TD COLSPAN="2">2</TD></TR>
+  <TR><TD>componentGlyphIds</TD><td>247 (/f)</td><TD>256 (/i)</TD></TR>
+</TABLE>
+>];
+
+  // scriptTablesHeader [label =< <B>Script Tables</B> >];
+  // languageSystemTablesHeader [label =< <B>Language System Tables</B> >];
+    { rank = same; st1 -> st2 [style = invis];}
+    // { rank = same; languageSystemTablesHeader -> lst1 -> lst2 -> lst3 [style = invis];}
+    // { rank = same; languageSystemTablesHeader -> lst1 [style = invis];}
+    // { rank = same; lig1 -> coverage [style = invis];}
+    { rank = same; featureList -> lookupList [style = invis];}
+    { rank = same; script -> featureList [style = invis];}
+
+    st1:defaultLangSys -> lst1:head[ weight = 5 ];
+    script:dflt -> st1:head[ weight = 1 ];
+    script:arab -> st2:head[ weight = 1 ];
+    // st2:urd -> lst2:head;
+    // st2:far -> lst3:head;
+
+    lst1:featureList -> featureList:ligaOff;
+    featureList:ligaOff -> feat1:head;
+    // lst2:featureList -> featureList:locl1;
+    // lst3:featureList -> featureList:locl2;
+    feat1:index1 -> lookupList:ll1;
+    lookupList:ll1 -> lookup1:head;
+    lookup1:ll1s -> lig1:head;
+    lig1:coverage -> coverage;
+    lig1:ligsetoff1 -> ligatureset:head;
+    ligatureset:fiLigature -> fiLigature;
+    ligatureset:ffiLigature -> ffiLigature;
+}
