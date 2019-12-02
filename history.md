@@ -3,6 +3,9 @@ layout: chapter
 title: A Brief History of Type
 ---
 
+* TOC
+{:toc}
+
 Once upon a time, a *font* was a bunch of pieces of metal. The first recorded use of metal type for printing comes from China. In 13th century, banknotes were printed with anti-counterfeit devices printed using blocks of bronze;[^2] the first metal type books were produced in Korea around the same time.[^1] Two hundred years later, Johannes Gutenberg came up with a similar system for creating metal type that would spread rapidly over Europe and continue to be the most common means of printing until the 19th century.
 
 To create type for printing, engravers would work the images of letters, numbers and so on into punches. Punches would then be struck into a mold called a *matrix*. The typemaker would then use the matrices to cast individual pieces of type (also known as *sorts*). A complete set of type sorts in the same size and style was collected together into a *font* of type.
@@ -125,7 +128,13 @@ Bézier curves were found to give the designer of curves - such as those used fo
 OpenType developed 1996-1999. David Lemon, Adobe.
 PostScript. In 1985, PostScript Type 1 fonts. (cubic beziers)
 
-PostScript Type 3 used full programming environment. (Image: Beowulf)
+PostScript level 1 defined two kinds of fonts: Type 1 and Type 3 PostScript Type 3 fonts were also allowed to use the full capabilities of the PostScript language. Prior to this level, fonts could only be specified in terms of graphics instructions: draw a line, draw a curve, and so on. But PostScript is a fully-featured programming language. When we talk about a "PostScript printer", what we mean is a printer which contains a little computer which can "execute" the documents they are sent, because these documents are actually *computer programs* written in the PostScript language. (The little computers inside the printers tended not to be very powerful, and one common prank for bored university students would be to send the printers ridiculously complicated programs which drew pretty graphics but tied them up with computations for hours.)
+
+Not many font designers saw the potential of using the programming capabilities of PostScript in their fonts, but one famous example which did was Erik van Blokland and Just van Rossum's *FF Beowolf*. Instead of using the PostScript `lineto` and `curveto` drawing commands to make curves and lines, Erik and Just wrote their own command called `freakto`, which used a random number generator to distort the positions of the points. Every time the font was called upon to draw a character, the random number generator was called, and a new design was generated - deconstructing the concept of a typeface, in which normally every character is reproduced identically.
+
+![beowolf](history/beowolf.jpg)
+
+While (perhaps thankfully) the concept of fully programmable fonts did not catch on, the 
 
 ## Multiple masters, GX, and variable fonts
 
