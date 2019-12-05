@@ -20,18 +20,18 @@ From a computer's perspective, a font is a database. It's a related collection o
 
 ![](opentype/schematic.svg)
 
-In other words, most of the information in a font is not the little black shapes that you look at; aside from having to deal with how to draw the glyphs, the computer is much more concerned with details about how the font is formatted, the glyphs that it supports, the heights, widths and sidebearings of those glyphs, how to lay them out relative to other glyphs, and what clever things in terms of kerns, ligatures and so on need to be applied. Each of these pieces of information is stored inside a table, which is laid out in a binary (non-human-readable) representation inside your OTF file.
+In other words, most of the information in a font is not the little black shapes that you look at; they're *easy*. The computer is much more concerned with details about how the font is formatted, the glyphs that it supports, the heights, widths and sidebearings of those glyphs, how to lay them out relative to other glyphs, and what clever things in terms of kerns, ligatures and so on need to be applied. Each of these pieces of information is stored inside a table, which is laid out in a binary (non-human-readable) representation inside your OTF file.
 
 ## FontTools and ttx
 
 To crack open that OTF file and look at the tables inside, we're going to use a set of Python programs called `fonttools`. `fonttools` was originally written by Just van Rossum, but is now maintained by Cosimo Lupo and a cast of hundreds. If you don't have `fonttools` already installed, you can get hold of it by issuing the following commands at a command prompt:
 
-> If you're a Mac user and you're not familiar with using a terminal emulator, pick up a copy of "Learning Unix for OS X" by Dave Taylor. If you're a Windows user, I'm afraid you're on your own; Windows has never made it particularly easy to operate the computer through the command prompt, and it's too painful to explain it here.
+> If you're a Mac user and you're not familiar with using a terminal emulator, pick up a copy of *Learning Unix for OS X* by Dave Taylor. If you're a Windows user, I'm afraid you're on your own; Windows has never made it particularly easy to operate the computer through the command prompt, and it's too painful to explain it here. If you're on Linux, you already know what you're doing.
 
     easy_install pip
     pip install fonttools
 
-If you have the Homebrew package manager installed, which is highly recommended for developing on Mac computers, you can get fonttools through Homebrew:
+If you have the Homebrew package manager installed, which is highly recommended for developing on Mac computers, you can get `fonttools` through Homebrew:
 
     brew install fonttools
 
@@ -39,7 +39,7 @@ If you have the Homebrew package manager installed, which is highly recommended 
 
 The core of the `fonttools` package is a library, some code which helps Python programmers to write programs for manipulating font files. But `fonttools` includes a number of programs already written using the library, and one of these is called `ttx`.
 
-As we mentioned above, an OpenType font file is a database. The database, with its various tables, is stored in a file using a format called SFNT, which stands for "spline font" or "scalable font". OpenType, TrueType, PostScript and a few other font types all use the SFNT representation to lay out their tables into a binary file. But because the SFNT representation is binary - that is to say, not human readable - it's not very easy for us either to investigate what's going on in the font or to make changes to it. The `ttx` utility helps us with that. It is used to turn an SFNT database into a textual representation, XML, and back again. The XML format is still designed primarily to be read by computers rather than humans, but it at least allows us to peek inside the contents of an OpenType font which would otherwise be totally opaque to us.
+As we mentioned above, an OpenType font file is a database. The database, with its various tables, is stored in a file using a format called SFNT, which stands for "spline font" or "scalable font". OpenType, TrueType, PostScript and a few other font types all use the SFNT representation to lay out their tables into a binary file. But because the SFNT representation is *binary* - that is to say, not human readable - it's not very easy for us either to investigate what's going on in the font or to make changes to it. The `ttx` utility helps us with that. It is used to turn an SFNT database into a textual representation, XML, and back again. The XML format is still designed primarily to be read by computers rather than humans, but it at least allows us to peek inside the contents of an OpenType font which would otherwise be totally opaque to us.
 
 ## Exploring OpenType with `ttx`
 
@@ -77,9 +77,13 @@ All apart from the first two tables in our file are required in every TrueType a
 |`post`|information used when downloading fonts to PostScript printers|
 |------|-----------------------------|
 
-The first table, `CFF`, is required if the outlines of the font are represented as PostScript CFF; a font using TrueType representation will have a different set of tables instead (`cvt`, `fpgm`, `glyf`, `loca` and `prep`). The second table in our list, `GSUB`, is one of the more exciting ones; it's the glyph substitution font which, together with `GPOS` (glyph positioning), stores most of the OpenType smarts. We will discuss them in the next chapter.
+OpenType fonts have two distinct ways of representing glyph outline data: PostScript strings and TrueType outlines. In general, PostScript strings are used, but TrueType is also an option. (You will see a lot of this dual nature of OpenType throughout the chapter, based on the dual heritage of OpenType fonts.)
 
-So those are the tables available to us. Now let us examine those tables by turning the whole font into an XML document:
+So the first table, `CFF`, is required if the outlines of the font are represented as PostScript CFF strings; a font using TrueType outlines will have a different set of tables instead (`cvt`, `fpgm`, `glyf`, `loca` and `prep`, which we will look at later).
+
+The second table in our list, `GSUB`, is one of the more exciting ones; it's the *glyph substitution* table which, together with `GPOS` (*glyph positioning*), stores most of the OpenType smarts. We will discuss these two tables and what they can do in the next chapter.
+
+So those are the tables in our completely empty font. Now let us examine those tables by turning the whole font into an XML document:
 
     $ ttx TTXTest-Regular.otf
     Dumping "TTXTest-Regular.otf" to "TTXTest-Regular.ttx"...
@@ -95,7 +99,7 @@ So those are the tables available to us. Now let us examine those tables by turn
     Dumping 'GSUB' table...
     Dumping 'hmtx' table...
 
-This produces a `ttx` file, which is the XML representation of the font, containing the tables mentioned above. But first, notice we have a new table, which did not appear in our list - `GlyphOrder`. This is the mapping that TTX has used between the Glyph IDs in the font and some human readable names. Looking at the file we see the table as follows:
+This produces a `ttx` file, which is the XML representation of the font, containing the tables mentioned above. But first, notice we have a new table, which did not appear in our list - `GlyphOrder`. This is not actually part of the font; it's an artefact of TTX, but it's pretty helpful. It tells us the mapping that TTX has used between the Glyph IDs in the font and some human readable names. Looking at the file we see the table as follows:
 
     <GlyphOrder>
       <!-- The 'id' attribute is only for humans; it is ignored when parsed. -->
@@ -105,7 +109,7 @@ This produces a `ttx` file, which is the XML representation of the font, contain
 
 Here we see our exported glyph `A`, and the special glyph `.notdef` which is used when the font is called upon to display a glyph that is not present. The Glyphs software provides us with a default `.notdef` which looks like this: ![notdef](opentype/notdef.png)
 
-The `post` and `maxp` tables are essentially *aides memoire* for the computer; they are a compilation of values automatically computed from other parts of the font. The `GSUB` table in our font is empty, so we will not deal with it here, but will return to it when we consider OpenType features.
+The `post` and `maxp` tables are essentially *aides memoire* for the computer; they are a compilation of values automatically computed from other parts of the font, so we will skip over them. The `GSUB` table in our font is empty, so we will not deal with it here, but will return to it when we consider OpenType features.
 
 ### The `head` table
 
@@ -134,7 +138,9 @@ The `post` and `maxp` tables are essentially *aides memoire* for the computer; t
 
 The most interesting values here for font designers and layout programmers are `unitsPerEm` through `macStyle`.
 
-The `unitsPerEm` value, which defines the scaling of the font to an em, must be a power of two for fonts using TrueType outlines. The most common values are 1000 for CFF fonts and 1024 for TrueType fonts; you may occasionally come across fonts with other values. (Open Sans, for instance, has an upem of 2048.) If you are writing a font renderer, you should not make assumptions about this value!
+The `unitsPerEm` value, which defines the scaling of the font to an em, must be a power of two for fonts using TrueType outlines. The most common values are 1000 for CFF fonts and 1024 for TrueType fonts; you may occasionally come across fonts with other values. (Open Sans, for instance, has an upem of 2048.)
+
+> If you are writing a font renderer, you should not make assumptions about this value!
 
 `created` and `modified` are mostly self-explanatory; in OpenType's binary representation they are actually stored as seconds since January 1st 1904, (Mac versions prior to OS X used this as their *epoch*, or reference point.) but `ttx` has kindly converted this to a more readable time value.
 
@@ -164,7 +170,7 @@ Before this next test, we will actually add some outlines to our font: a capital
 
 (Outlines taken from Paul Hunt's "Source Sans Pro".)
 
-After exporting the new font and converting the font again using TTX, let's have a look at the `hhea` and `OS/2` tables. These tables are used to set the global defaults when using this font in horizontal typesetting. They represent one of the more unfortunate compromises of the OpenType standard, which brought together font files from both the Windows and Mac platforms. It's a cardinal rule of data handling that you shouldn't store the same value in two different places, because then they will eventually end up either going out of sync or being used in different ways, or, as in the case of OpenType, both.
+After exporting the new font and converting it to XML again using TTX, let's have a look at the `hhea` and `OS/2` tables. These tables are used to set the global defaults that a rendering engine needs to know when using this font in horizontal typesetting. They represent one of the more unfortunate compromises of the OpenType standard, which brought together font files from both the Windows and Mac platforms. It's a cardinal rule of data handling that you shouldn't store the same value in two different places; if you do, they are practically guaranteed to end up either going out of sync, or being used in different ways. OpenType manages to display *both* of these failure modes.
 
 First, here's some of the `hhea` table:
 
@@ -177,7 +183,7 @@ First, here's some of the `hhea` table:
       ...
     </hhea>
 
-At this point let's also look at the parts of the `OS/2` table which deal with glyph metrics. Because you can't say `OS/2` in valid XML, `ttx` writes it funny:
+At this point let's pause and skip down to the parts of the `OS/2` table which deal with glyph metrics. Because you can't say `OS/2` in valid XML, `ttx` writes it funny:
 
     <OS_2>
       ...
@@ -192,7 +198,7 @@ At this point let's also look at the parts of the `OS/2` table which deal with g
       ...
     </OS_2>
 
-Immediately you should see that the font editor, Glyphs, has chosen to provide different values for things that seem to be the same: `ascent` in `hhea` is 1000, and so is `usWinAscent`, but `sTypoAscender` is 800. `descent` and `sTypoDescender` are -200, but `usWinDescent` is 200. Most confusingly, `lineGap` is 0 but `sTypoLineGap` is 200, and if you look into the OpenType specification, you will find that `lineGap` in `hhea` is described as "typographic line gap" and `sTypoLineGap` is described as "the typographic line gap for this font".
+Immediately you should see that the font editor (I used Glyphs to produce this font) has chosen to provide different values for things that seem to be the same: `ascent` in `hhea` is 1000, and so is `usWinAscent` in `OS/2`, but we also have `sTypoAscender` which is set to 800. `descent` and `sTypoDescender` are -200, but `usWinDescent` is 200. Most confusingly, `lineGap` in `hhea` is 0 but `sTypoLineGap` in `OS/2` is 200, but if you look into the OpenType specification, you will find that `lineGap` in `hhea` is described as "typographic line gap" and `sTypoLineGap` is described as "the typographic line gap for this font". Sounds like the same thing, doesn't it?
 
 Finally, bit 7 of the `fsSelection` flag is set. The description of bit 7 in the OpenType standard reads "if set, it is strongly recommended to use `OS/2.sTypoAscender - OS/2.sTypoDescender + OS/2.sTypoLineGap` as a value for default line spacing for this font."
 
@@ -214,9 +220,7 @@ Safari, Firefox and Illustrator all do this:
 
 ![metrics measuring glyph](opentype/safari.png)
 
-(Although Illustrator's selection extends to slightly more than 500 points below the baseline. *XXX why?*)
-
-*XXX Need Windows test here. Also, what do the various Linux rendering things do?*
+(Although when I select the glyph in Illustrator, the selection extends to slightly *more* than 500 points below the baseline. I have no idea why this is.)
 
 The `usWinAscent` and `usWinDescent` values are used for text *clipping* on Windows. In other words, any contours above 1000 or below -200 units will be clipped on Windows applications. On a Mac, the relevant values for clipping are `hhea`'s `ascender` and `descender`. Mac uses `hhea`'s `lineGap` to determine line spacing. As we can see from our Safari example, there is no gap between the lines: the first line's descender at -200 units lines up perfectly with the second line's ascender at 1000 units. Finally, the `typo` values are used by layout applications to position the first baseline of a text block and set the default line spacing.
 
@@ -234,7 +238,7 @@ So how should actually we set these values? Unfortunately, there is not a real c
 
 * Bit 7 of `fsSelection` should be turned on.
 
-If you don't like this strategy, there are plenty of others to choose from. The [Glyphs web site](https://www.glyphsapp.com/tutorials/vertical-metrics) describes the strategies used by Adobe, Microsoft and web fonts; [Google fonts](https://github.com/googlefonts/gf-docs/blob/master/VerticalMetricsRecommendations.md) has another.
+If you don't like this strategy, there are plenty of others to choose from. The [Glyphs web site](https://www.glyphsapp.com/tutorials/vertical-metrics) describes the strategies used by Adobe, Microsoft and web fonts; [Google fonts](https://github.com/googlefonts/gf-docs/blob/master/VerticalMetricsRecommendations.md) has another. Karsten Lucke has a [guide](https://www.kltf.de/downloads/FontMetrics-kltf.pdf) which goes into all of this in excruciating detail but finally lands on the strategy mentioned above.
 
 Yes, this is a complete hot mess. Sorry.
 
@@ -301,11 +305,11 @@ We see that if the user wants Unicode codepoint `0x41`, we need to use glyph num
 
 ### The `CFF` table
 
-Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. First, we'll look at the `CFF` table which, as mentioned above, represents fonts with PostScript outlines.
+Finally, let's look at the table which is of least interest to typography and layout software, although font designers seem to rather obsess over it: the actual glyph outlines themselves. First, we'll look at the `CFF` table which, as mentioned above, represents OpenType fonts with PostScript outlines.
 
 What's interesting about the `CFF` table is that its representation is "alien" to OpenType. CFF is a data format borrowed wholesale from elsewhere - Adobe invented the Compact Font Format in 1996 as a "compact" (binary) way to represent its PostScript Type 1 fonts, as opposed to the longform way of representing font data in the PostScript language. It was used since PDF version 1.2 to represent font subsets within PDF documents, and later introduced into OpenType as the representation for PS outlines.
 
-In other words, CFF is an independent font format, and so begins its own "public" header before it launches into the outline definitions, giving some general information about the font:
+In other words, CFF is an *independent* font format. You actually have another whole font file inside your font file. This CFF font file begins with its own "public" header before it launches into the outline definitions, giving some general information about the font:
 
     <CFF>
       <CFFFont name="TTXTest-Regular">
@@ -359,15 +363,20 @@ Finally we get to the good stuff:
           66 -213 rlineto
           95 hlineto
           -237 700 rlineto
+
           -157 -415 rmoveto
           33 107 24 79 24 75 22 81 rlinecurve
           4 hlineto
           22 -81 23 -76 25 -78 34 -107 rcurveline
           endchar
 
-The definition of the characters themselves, in the postscript language, begins with some hinting information: the total width is 580, and there's a horizontal stem that starts at 213 and goes for 72 units to 285; (the crossbar of the A) then another which goes from 285+342=627 to 627+73=700 to represent the apex of the A. The vertical stem goes from the left side bearing (3 units) all the way across the glyph.
+The definition of the characters themselves, in the PostScript language, begins with some hinting information: the total width is 580, and there's a horizontal stem that starts at 213 and goes for 72 units to 285; (the crossbar of the A) then another which goes from 285+342=627 to 627+73=700 to represent the apex of the A. The vertical stem goes from the left side bearing (3 units) all the way across the glyph.
 
-Then there are a series of moving and drawing operations: we start at the left side of the apex, and draw a diagonal line down to (3,0). (PostScript uses relative coordinates) For a horizontal line, we only need to know the width: `91 lineto` takes us from (3,0) to (94,0). We go around the outline until `-237 700` takes us back to the top *right* of the apex, and moving the pen closes the outline. Now when we move to the aperture of the A, we see some curves - there are subtle flexes within the diagonals of the aperture. (You font designers are *clever* people.) `rlinecurve` specifies the relative positions of the start, first control point, second control point and end point of our cubic Bézier curve. We move across to the right a bit, have a curve that comes down, and that concludes our letter A.
+Then there are a series of moving and drawing operations: we `rmoveto` the left side of the apex, and draw the left outmost stroke of the A, a diagonal `rlineto` the position (3,0). (PostScript uses relative coordinates: we move left 237 units and down 700 units, so we end up at (3,0).) Now we're at the bottom left corner of the A, about to draw the horizontal line at the bottom of the left leg. PostScript has a special drawing instruction, `hlineto`, for horizontal lines, which omits the vertical coordinate, which means that `91 hlineto` takes us from (3,0) to (94,0).
+
+We go around the outline until `-237 700` takes us back to the top *right* of the apex. (I've added a blank line here for clarity, although it would not be in the actual TTX outline.) This is almost the end of the outer outline. We haven't actually drawn the line between the top right of the apex and the top left where we started, but it turns out we don't need to. When we pick up the pen and move it somewhere else, which will be our next instruction, the outline gets closed for us.
+
+We've just been dealing with straight lines so far, but moving us left 157 units and down 415 units places us in the middle of the counter of the A, where we start to see some curves - there are subtle flexes within the diagonals of the aperture. (You font designers are *clever* people.) `rlinecurve` specifies the relative positions of the start, first control point, second control point and end point of our cubic Bézier curve. We move across to the right a bit, have a curve that comes down, and that concludes our letter A.
 
 ### The `post` table
 
@@ -385,11 +394,11 @@ While we're on the subject of PostScript Type 1 representation, let's briefly lo
       <maxMemType1 value="0"/>
     </post>
 
-The `post` table has been through various revisions; in previous versions, it would also include a list of glyph names, but as of version 3.0, no glyph names are provided to the PostScript processor. The final four values are hints to the driver as to how much memory this font requires to process. Setting it to zero doesn't do any harm; it just means that the driver has to work it out for itself. The italic angle is specified in degrees *counter*clockwise, so a font that leans forward 10 degrees will have an italic angle of -10. `isFixedPitch` specifies a monospaced font, and the remaining two values are irrelevant because nobody should ever use underlining for anything.
+The `post` table has been through various revisions; in previous versions, it would also include a list of glyph names, but as of version 3.0, no glyph names are provided to the PostScript processor. The final four values are hints to the driver as to how much memory this font requires to process. Setting it to zero doesn't do any harm; it just means that the driver has to work it out for itself. The italic angle is specified in degrees *counter*clockwise, so a font that leans forward 10 degrees will have an italic angle of -10. `isFixedPitch` specifies a monospaced font, and the remaining two values are irrelevant because nobody should ever use underlining for anything, am I right?
 
 ## TrueType Representation
 
-If we output our test font with TrueType outlines, we see things have changed:
+So that was the PostScript format, which is the normal way of exporting OpenType fonts. But Glyphs allows us to output our test font with TrueType outlines, and if we do that, we see that things have changed:
 
     $ ttx -l TTXTest-Regular.ttf
     Listing table info for "TTXTest-Regular.ttf":
@@ -468,9 +477,9 @@ What about the `loca` table? The `glyf` table contains all contours for all the 
 
 ## And more tables!
 
-We've looked at all of the compulsory tables in an OpenType font; there are many other tables which can also be present.
+We've looked at all of the compulsory tables in an OpenType font; there are many other tables which can also be present. There are tables which handle vertical typesetting, and tables which allow you to position the baseline at different places for different scripts; tables which give hints on how to justify lines, or resize mathematical symbols; tables which help with hinting, and tables which contain bitmaps, vector graphics, and color font information. For more on how these tables work, it's best to read the [OpenType specification itself](https://docs.microsoft.com/en-us/typography/opentype/spec/).
 
-XXX
+In fact, why stop there? There's nothing to stop you defining your own table structure and adding it to your font; the font is just a database. If you want to add a `SHKS` table which contains the complete works of Shakespeare, you can do that; software which doesn't recognise the table will simply ignore it, so it'll still be a perfectly valid font. (Yes, I have tried this.) TTX will even happily dump it out for you, even if it doesn't know how to interpret it. The Graphite font rendering software, developed by SIL, uses this method to embed advanced features inside the fonts, such as automatic collision avoidance and word kerning (character kerning across a space boundary), in custom Graphite-specific tables.
 
 Finally, there is one more table which we haven't mentioned, but without which nothing would work: the very first table in the font, called the Offset Table, tells the system which tables are contained in the font file and where they are located within the file. If we were to look at our dummy OpenType font file in a hex editor, we would see some familiar names at the start of the file:
 
@@ -500,33 +509,35 @@ A collection is, then, a bunch of TrueType fonts all welded together, with a hea
 
 ## OpenType Font Variations
 
-Another, more flexible way of putting multiple family members in the same file is provided by OpenType Font Variations. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, font variations fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between - semibolds, hemi-semibolds and everything else suddenly become available. (Whether or not you believe that users really ought to have access to infinite variations of a font is entirely another matter.)
+Another, more flexible way of putting multiple family members in the same file is provided by OpenType Font Variations. Announced at the ATypI conference in 2016 as part of the OpenType 1.8 specification, font variations fulfill the dream of a font whereby the end user can be dynamically make the letterforms heavier or lighter, condensed or expanded, or whatever other axes of variation are provided by the font designer; in other words, not only can you choose between a regular and a bold, but the user may be able to choose any point in between - semibolds, hemi-semibolds and everything else suddenly become available. (Whether or not you believe that users really *ought* to have access to infinite variations of a font is entirely another matter.)
 
 As with everything OpenType, variable fonts are achieved through additional tables; and as with everything OpenType, legacy compromises means that things are achieved in different ways depending on whether you're using PostScript or TrueType outlines. TrueType outlines are the easiest to understand, so we'll start with these.
 
 But first, we have to understand interpolation and deltas. From a designer's perspective, what you do when you design a variable font doesn't really change much from an ordinary multiple master font. First, you decide on your design axes and the points on those axes that you will design; the most common axis is the weight axis - perhaps you will go from regular to bold, or you may design thin, regular and black weights and interpolate between those points. Or you may choose to work on the width axis, designing condensed, regular and extended masters. Then you draw your glyphs, and five years later you have a font.
 
-> Italic isn't a design axis; it's handled separately, for two reasons: first, you don't really want people to be producing semi-italic fonts, and second, often the italic shapes of characters are quite different to the upright shapes, so it's not possible or sensible to interpolate between them.
+> Italic isn't a design axis; it's usually handled separately, for two reasons: first, you don't really want people to be producing semi-italic fonts, and second, often the italic shapes of characters are quite different to the upright shapes, so it's not possible or sensible to interpolate between them. I mean, you *could*. But you probably shouldn't.
 
 ![design spaces](opentype/varfont/designspace.svg)
 
-Once you have designed your masters, you can then interpolate instances in between those extremes; for instance, if we wanted to create a semibold instance of this font, (Noto Sans Khmer) we would take the regular and the bold masters and, for each point on the glyph, compute a position that lays some proportion of the way between the corresponding points on the two masters:
+Once you have designed your masters, you can then interpolate instances in between those extremes; for instance, if we wanted to create a semibold instance of this font, (Noto Sans Khmer) we would take the regular and the bold masters and, for each point on the glyph, compute a position that lays some proportion of the way between the corresponding points on the two masters.
+
+How does this work? In the diagram below, the green (regular) and red (bold) outlines represent our two different input masters. To form the semibold, we "take the average" of each point between the green and red, ending up with the yellow points, which is the outline of our semibold instance:
 
 ![interpolation](opentype/varfont/interpolation.svg)
 
-In this understanding of font variation, you have two distinct masters for each axis. Another way to represent the same information is to have one master, and a number of *deltas* for each point, which describe how to get to the other master:
+But there's another way to think about masters and interpolation. When *designing* your font, you design with two distinct masters for each axis. Each master represents an "end" of the axis - one master for the thickest and one for the thinnest; one master for the widest, and one for the narrowest, and so on. Nothing changes here. But when the font is assembled as an OpenType variation font, it only has one set of outlines as normal. The outlines in the `CFF` or `glyf` tables represent the Ur-Outline, the One True Master, essentially a "normal" or "average" form of each glyph. The *axes* (such as width or weight) are represented in terms of how we should vary the shape of the One True Master. For each point, we have a set of *deltas*. For example, the bold axis will be given as a set of vector coordinates for each point on each glyph, describing how to get from the One True Master to the bold form:
 
 ![deltas](opentype/varfont/deltas-1.svg)
 
-This makes it very easy to represent multiple design axes. If you're designing for both width and weight, you no longer need to keep regular, condensed, bold and bold condensed masters around. Instead you have a single master and two sets of deltas:
+The reason for using a single master and multiple deltas is that you can then *blend* together motion along multiple design axes. Instead of having separate regular, condensed, bold, and bold condensed masters, the font is represented internally as having a single master and two sets of deltas, one which makes the font more bold and one which makes it more condensed:
 
 ![more deltas](opentype/varfont/deltas-2.svg)
 
-Creating a semibold condensed instance of this font requires you to do some vector mathematics: for each point, multiply the weight vector by 50% (or whatever proportion you like your semibold to be), take the product of that vector with the width vector, and apply the resulting vector to the position of the point.
+Creating a semibold condensed instance of this font requires you to do some vector mathematics. If we say that "semibold" means 50% of full bold, and "condensed" is 100% of the way down the condensed axis, then for each point, we need to compute its "semibold condensed" vector. We multiply the red *weight* vector for that point by 50%, then take the product of that vector with 100% of the yellow *condensed* vector. Then we add the resulting vector to the original position of the point on the green master.
 
-> That was a simplification. Don't worry, we'll get more complex later.
+> That was a simplification, as we'll see a bit later.
 
-Let's see how this is represented. We've been using Noto Sans Khmer, so let's break that open in `ttx`:
+So let's see how this is actually looks inside the file. We've been using Noto Sans Khmer, so let's break that open in `ttx`:
 
     $ ttx NotoSansKhmer-GX.ttf
     Dumping "NotoSansKhmer-GX.ttf" to "NotoSansKhmer-GX.ttx"...
@@ -547,7 +558,7 @@ Let's see how this is represented. We've been using Noto Sans Khmer, so let's br
     Dumping 'fvar' table...
     Dumping 'gvar' table...
 
-We've got a couple more tables this time: `fvar` and `gvar`. The `fvar` table describes the design axes, their range, and where the "default" (i.e. master) is on that axis:
+We've got a couple more tables this time: `fvar` and `gvar`. The `fvar` table describes the design axes, their range, and where the One True Master is situated on that axis:
 
     <fvar>
       <Axis>
@@ -567,7 +578,7 @@ We've got a couple more tables this time: `fvar` and `gvar`. The `fvar` table de
 
 This font has two design axes, width and weight. (There's also a third axis in the font, a custom axis which doesn't seem to be used. So I've removed it for clarity.)
 
-The names of the axes are localised in the `name` table so that they can be displayed to users in the appropriate language. The width axis runs from compressed=70 to regular=100, and the master stored in the font represents the regular width; the weight axis runs from 26 to 190, with the master (regular weight) located at 90.
+The names of the axes are localised in the `name` table so that they can be displayed to users in the appropriate language. The width axis runs from compressed=70 to regular=100, and the One True Master represents the regular width; the weight axis runs from 26 to 190, with the One True Master located at 90.
 
 > There are two types of axes in the Font Variations specification: registered axes and custom axes. The idea behind a registered axis is that everyone should be able to use the axis in the same way. Weight and width are registered axes, because they're the kind of thing that a lot of fonts are going to use. So the specification also defines some semantics for the values on these axes, so that applications can produce an interface and user experience that is common across fonts. The width axis is defined as a percentage value of compression, with "100" representing the default font neither compressed nor expanded. The weight axis is supposed to work like CSS weights, with a standard regular master having a value of 400. (Noto is being naughty here.)
 
@@ -641,6 +652,40 @@ In other words, you have a variety of deltas, and each delta is associated with 
 
 > If you actually need to implement variable fonts, print out the [font variations overview](https://www.microsoft.com/typography/otspec/otvaroverview.htm) and sit down with it over a cup of coffee. It's not too hard to understand.
 
-XXX CFF2
+We've looked at TrueType outlines; what about PostScript outlines? Well, the old CFF font format didn't have support for deltas and variations, so a new format was needed. CFF2 introduces new operators `blend` and `vsindex` to handle deltas. (There are a number of other changes between CFF and CFF2, but we are not going to go into them here.)
 
-# SVG Fonts
+The `blend` operator tells the renderer to apply a variation across multiple axes. The following example is taken from the [CFF2 CharString Format specification](https://docs.microsoft.com/en-us/typography/opentype/spec/cff2charstr). Imagine you have an outline which starts at co-ordinate (100,200) in the One True Master, but which starts at the following co-ordinates in the other masters:
+
+|---|
+| Master | Co-ordinate | Delta |
+|-------|----:|----:|
+| Regular | (100,200) | |
+| Light | (100,150) | (0,-50) |
+| Bold | (100,300) | (0, +100) |
+| Condensed | (50,100) | (-50,-100) |
+
+Let's also imagine we want to find the bold condensed instance of this font.
+
+In a non-variable font, we would start the CFF program with:
+
+    100 200 rmoveto
+
+But we want instead want to *compute* the appropriate co-ordinate to move to, based on the deltas. So the program is written using the `blend` operator like so:
+
+    (One True Master) (X deltas) (Y deltas) (num of operands) blend (command)
+
+In this case:
+
+    (100 200) (0 0 -50) (-50 100 -100) 2 blend rmoveto
+
+(I've added parentheses so you can see how the arguments are grouped, but in the font program it would just appear as `100 200 0 0 -50 ...`)
+
+When this font program is executed by the PostScript implementation, the `blend` command runs first, before the `rmoveto` command. `blend` applies the bold (second) and condensed (third) deltas to the One True Master outline, does the computation leaving behind two operands to the next command, and then disappears off the stack. What we then have left to execute is:
+
+    (100+0-50) (200+100-100) rmoveto
+
+i.e.
+
+    50 200 rmoveto
+
+which puts us in the right place for the bold condensed instance.
