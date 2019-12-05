@@ -1,7 +1,11 @@
 ---
 layout: chapter
 title: The Unicode Standard
+finished: true
 ---
+
+* TOC
+{:toc}
 
 When humans exchange information, we use sentences, words, and - most relevantly for our purposes - letters. But computers don't know anything about letters. Computers only know about numbers, and to be honest, they don't know much about them, either. Because computers are, ultimately, great big collections of electronic switches, they only know about two numbers: zero, if a switch is off, and one, when a switch is on.
 

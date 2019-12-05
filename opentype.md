@@ -1,6 +1,7 @@
 ---
 layout: chapter
 title: How OpenType Works
+finished: true
 ---
 
 * TOC

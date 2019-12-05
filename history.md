@@ -128,30 +128,49 @@ Bézier curves were found to give the designer of curves - such as those used fo
 
 ## PostScript Fonts, TrueType and OpenType
 
-1987 idea for TrueType, introduced Microsoft/Apple 1991.
-OpenType developed 1996-1999. David Lemon, Adobe.
-PostScript. In 1985, PostScript Type 1 fonts. (cubic beziers)
-
 PostScript level 1 defined two kinds of fonts: Type 1 and Type 3 PostScript Type 3 fonts were also allowed to use the full capabilities of the PostScript language. Prior to this level, fonts could only be specified in terms of graphics instructions: draw a line, draw a curve, and so on. But PostScript is a fully-featured programming language. When we talk about a "PostScript printer", what we mean is a printer which contains a little computer which can "execute" the documents they are sent, because these documents are actually *computer programs* written in the PostScript language. (The little computers inside the printers tended not to be very powerful, and one common prank for bored university students would be to send the printers ridiculously complicated programs which drew pretty graphics but tied them up with computations for hours.)
 
 Not many font designers saw the potential of using the programming capabilities of PostScript in their fonts, but one famous example which did was Erik van Blokland and Just van Rossum's *FF Beowolf*. Instead of using the PostScript `lineto` and `curveto` drawing commands to make curves and lines, Erik and Just wrote their own command called `freakto`, which used a random number generator to distort the positions of the points. Every time the font was called upon to draw a character, the random number generator was called, and a new design was generated - deconstructing the concept of a typeface, in which normally every character is reproduced identically.
 
 ![beowolf](history/beowolf.jpg)
 
-While (perhaps thankfully) the concept of fully programmable fonts did not catch on, the 
+While (perhaps thankfully) the concept of fully programmable fonts did not catch on, the idea that the font itself can include instructions about how it should appear in various contexts, the so-called "smartfont", became an important idea in subsequent developments in digital typography formats - notable Apple's Advanced Typography and OpenType.
 
-## Multiple masters, GX, and variable fonts
+Type 3 fonts were open to everyone - Adobe published the specification for how to generate Type 3 fonts, allowing anyone to make their own fonts with the help of font editing tools such as Altsys' Fontographer. But while they allowed for the expressiveness of the PostScript language, Type 3 fonts lacked one very important aspect - hinting - meaning they did not rasterize well at small sizes. If you wanted a professional quality Type 1 font, you had to buy it from Adobe, and they kept the specification for creating Type 1 fonts to themselves. Adobe commissioned type designs from well-known designers and gained a lucrative monopoly on high-quality digital fonts, which could only be printed on printers with Adobe PostScript interpreters.
+
+By this time, Apple and Microsoft had attempted various partnerships with Adobe, but were locked out of development - Adobe jealously guarded its PostSrript Type 1 crown jewels. In 1987, they decided to counter-attack, and work together to develop a scalable font format designed to be rasterized and displayed on the computer, with the rasterizer built into the operating system. In 1989, Apple sold all its shares in Adobe, and publicly announced the TrueType format at the Seybold Desktop Publishing Conference in San Francisco. The font wars had begun.[^11]
+
+This was one of the factors which caused Adobe to break its own monopoly position in 1990. They announced a piece of software called "Adobe Type Manager", which rendered Type 1 fonts on the computer instead of the printer. (It had not been written at the time of announcement, but this was intended as a defensive move to keep people loyal to the PostScript font format.) The arrival of Adobe Type Manager had two huge implications: first, by rendering the fonts on the computer, the user could now see the font output before printing it. Second, now PostScript fonts could be printed on any printer, including those with (cheaper) Printer Command Language interpreters rather than the more expensive PostScript printers. These two factors - "What You See Is What You Get" fonts printable on cheap printers - led to the "desktop publishing" revolution. At the same time, they also published the specifications for Type 1 fonts, making high quality typesetting *and* high quality type design available to all.
+
+## Multiple masters, GX, and OpenType
+
+But it was to no avail. There were many reasons why TrueType ended up winning the font wars. Some of these were economic in nature: the growing personal computer market meant that Microsoft and Apple had tremendous influence and power while Adobe remained targeting the high-end market. But some were technical: while PostScript fonts never really advanced beyond their initial capabilities, TrueType was constantly being developed and extended.
+
+AAT 1999
+
+In 1997, Microsoft and Adobe made peace. They worked to develop their own set of enhancements to TrueType, which they called TrueType Open (Microsoft's software strategy throughout the 1990s was to develop software which implemented a public standard and extend it with their own feature enhancements, marginalizing users of the original standard. TrueType Open was arguably another instance of this...); the renderer for TrueType Open, Uniscribe, was added to the Windows operating system in 1999.
+
+Later called OpenType, the development of this new technology was led by David Lemon of Adobe and xxx of Microsoft, and had the design goal of *interoperability* between TrueType fonts and Adobe Type 1 PostScript fonts. In other words, as well as being an updated version of TrueType to allow extended typographic refinements, OpenType was essentially a *merger* of two very different font technologies: TrueType and PostScript Type 1. As well as being backwardly compatible with TrueType, it allowed PostScript Type 1 fonts to be wrapped up in a TrueType-like wrapper - one font format, containing two distinct systems.
+
+OpenType is now the *de facto* standard and best in class digital font format, and particularly in terms of its support for the kind of things we will need to do to implement global scripts and non-Roman typography.
+
+
+## Variable fonts
+
+Adobe MM first
+AAT variations
 
 ## The OT Co-operative model
 ## Would be remiss not to mention emoji here
 
 [^1]: Hye Ok Park, 2014. "The History of Pre-Gutenberg Woodblock and Movable Type Printing in Korea", *International Journal of Humanities and Social Science*, 4:9.
 [^2]: Pan Jixing, 2001. *A History of Moveable Type Printing in China*. Beijing: Institute for History of Science, Academy of Science, 273.
-[^3]: See http://www.columbia.edu/cu/computinghistory/2260.html
-[^4]: See Karow, 2013, *Digital Typography and Artifical Intelligence*, Dutch Type Library (available at https://www.dutchtypelibrary.nl//PDF/Miscellaneous/Digital_Typography_and_AI.pdf) for the history.
-[^5]: https://twitter.com/HoeflerCo/status/655557339987226624
+[^3]: See [The IBM 2260 Display Station](http://www.columbia.edu/cu/computinghistory/2260.html).
+[^4]: See Karow, 2013, [*Digital Typography and Artifical Intelligence*](https://www.dutchtypelibrary.nl//PDF/Miscellaneous/Digital_Typography_and_AI.pdf), Dutch Type Library, for the history.
+[^5]: [HoeflerCo on Twitter](https://twitter.com/HoeflerCo/status/655557339987226624).
 [^6]: Knuth, 1982, "The Concept of a Meta-Font", *Visible Language* 17.
-[^7]: Brian Reid, 1985, "PostScript and Interpress: a comparison", https://tech-insider.org/unix/research/1985/0301.html
-[^8]: Known technically as a "biarc" curve; see https://en.wikipedia.org/wiki/Biarc
+[^7]: Brian Reid, 1985, ["PostScript and Interpress: a comparison"](https://tech-insider.org/unix/research/1985/0301.html).
+[^8]: Known technically as a "biarc" curve; see [Biarc](https://en.wikipedia.org/wiki/Biarc).
 [^9]: Look, I'm having to simplify here. METAFONT84 used cubic Bézier curves just like PostScript does, but with the off-curve control points being implicit and automatically generated using John Hobby's algorithm, rather than explicitly specified as in the PostScript case. I don't know how METAFONT79 worked.
-[^10]: Fiona Ross, 1988, *The Evolution of the Printed Bengali Character from 1778 to 1978*, PhD Thesis, School of Oriental and African Studies. Joe Condon, Brian Kernighan and Ken Thompson's Bell Labs Technical Memorandum *Experience with the Mergenthaler Linotron 202 Phototypesetter, or, How We Spent Our Summer Vacation* is a fascinating technical look at the insides of the 202. (https://www.cs.princeton.edu/~bwk/202/)
+[^10]: Fiona Ross, 1988, *The Evolution of the Printed Bengali Character from 1778 to 1978*, PhD Thesis, School of Oriental and African Studies. Joe Condon, Brian Kernighan and Ken Thompson's Bell Labs Technical Memorandum [*Experience with the Mergenthaler Linotron 202 Phototypesetter, or, How We Spent Our Summer Vacation*](https://www.cs.princeton.edu/~bwk/202/) is a fascinating technical look at the insides of the 202.
+[^11]: [The Font Wars](https://courses.cs.washington.edu/courses/csep590/06au/projects/font-wars.pdf) by James Shimada, is an excellent historical overview of those days.
