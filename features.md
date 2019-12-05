@@ -10,15 +10,23 @@ In the previous chapter we looked at some of the data tables hiding inside an Op
 
 > When I use the word "instruction" in this chapter, I'm using the term in the computer programming sense - programs are made up of instructions which tell the computer what to do, and we want to be telling our shaping engine what to do. In the font world, the word "instruction" also has a specific sense related to hinting of TrueType outlines, which we'll cover in the chapter on hinting.
 
-Specifically, two tables within the font - the `GPOS` and `GSUB` tables - provide for a wide range of context-sensitive font transformations. `GPOS` contains instructions for altering the position of glyph. The canonical example of context-sensitive repositioning is *kerning*, which modifies the space between two glyphs depending on what those glyphs are, but `GPOS` allows for many other kinds of repositioning instructions. The other table, `GSUB`, contains instructions for substituting some glyphs for others based on certain conditions. The obvious example here is *ligatures*, which substitutes a pair (or more) of glyphs for another: the user types "f" and then "i" but rather than displaying those two separate glyphs, the font tells the shaping engine to fetch the single glyph "ﬁ" instead. But once again, `GSUB` allows for many, many interesting substitutions - some of which help us designing fonts for complex scripts.
+XXX Quick explanation here.
+
+Specifically, two tables within the font - the `GPOS` and `GSUB` tables - provide for a wide range of context-sensitive font transformations. `GPOS` contains instructions for altering the position of glyph. The canonical example of context-sensitive repositioning is *kerning*, which modifies the space between two glyphs depending on what those glyphs are, but `GPOS` allows for many other kinds of repositioning instructions.
+
+The other table, `GSUB`, contains instructions for substituting some glyphs for others based on certain conditions. The obvious example here is *ligatures*, which substitutes a pair (or more) of glyphs for another: the user types "f" and then "i" but rather than displaying those two separate glyphs, the font tells the shaping engine to fetch the single glyph "ﬁ" instead. But once again, `GSUB` allows for many, many interesting substitutions - some of which help us designing fonts for complex scripts.
 
 ## Features, lookups and rules
+
+XXX Introduce by example first.
 
 OpenType instructions are arranged in a hierarchical fashion: an instruction which modify the position or content of some glyphs is called a *rule*. Rules are grouped into sets called *lookups*, and lookups are categorised into *features*. Features apply to particular combinations of *language* and *script*.
 
 When a shaping engine processes a run of text, it first determines which features are in play for this run. While a feature can be called anything you like, layout applications will pass certain well-known feature names when the user asks for a particular typographic refinement. For instance, if you hit the "small caps" icon in your word processor, the word processor will ask the shaping engine to process the `smcp` feature. At the same time, the font itself can ask for certain features to be processed by default - the `liga` feature is often turned on by default to provide for standard ligature processing. The application will also tell the shaper what language and script is in use. So in our example, the shaping engine will run through all the lookups within the `smcp` and `liga` features for the language/script combination in use.
 
-We'll start our investigation of features once again by experiment, and from the simplest possible source. As we mentioned, the canonical example of a `GPOS` feature is kerning. (The `kern` feature - again one which is generally turned on by default by the font.) We take our test font from the previous chapter. Right now it has no `GPOS` table, and the `GSUB` table contains no features, lookups or rules; just a version number:
+We'll start our investigation of features once again by experiment, and from the simplest possible source. As we mentioned, the canonical example of a `GPOS` feature is kerning. (The `kern` feature - again one which is generally turned on by default by the font.) XXX note TT kern table.
+
+We're going to take our test font from the previous chapter. Right now it has no `GPOS` table, and the `GSUB` table contains no features, lookups or rules; just a version number:
 
     <GSUB>
       <Version value="0x00010000"/>
@@ -133,6 +141,8 @@ and a lookup like this:
 
 The rules all start with a rule name and end with a semicolon, but what is in the middle depends on the nature of the rule. This kerning rule alters glyphs positions, so it is a `pos` rule (you can also spell this `position`, if you like). There are various kinds of `pos` rule, but the one we want has three parameters: after glyph "A" and before glyph "B", alter the horizontal advance by -50 units.
 
+XXX split this out to a separate section
+
 Now is a good time to introduce the `hb-shape` tool, which comes as part of [HarfBuzz](http://harfbuzz.org); it's a very handy utility for testing the application of OpenType features. HarfBuzz is an OpenType shaping engine, used by layout applications. Shaping, as we know, is the process of taking a text, a font, and some parameters and producing a set of glyphs and their positions. `hb-shape` runs the shaping process for us and formats the output of the process in a number of different ways. We can use it to check our kern:
 
     $ hb-shape TTXTest-Regular.otf 'AA'
@@ -184,7 +194,7 @@ Second, if we look at the Devanagari glyph sequence "NA UUE LLA UUE DA UUE " (�
 
 ![](features/noto.svg)
 
-We see that in the case of the "NA UUE" and "LLA UUE" combinations, the vowel sign UUE is normally positioned at a fixed distance below the headline, regardless of the depth of the base character. (So we're not using mark to base and anchors here, for those of you who have read ahead.)
+We see that in the case of the "NA UUE" and "LLA UUE" combinations, the vowel sign UUE is normally positioned at a fixed distance below the headline, regardless of the depth of the base character. (So we're not using mark to base and anchors here, for those of you who have read ahead.) XXX Reword to make more clear
 
 However, if we attached the vowel sign to the "DA", we'd get a collision with the DA's curly tail. So in a DA+UUE sequence, we have to do a bit of *vertical* kerning: move the vowel sign down a bit when applied to a long descender. Here's the code to do that (which I've simplified to make it more readable):
 
@@ -262,10 +272,48 @@ What does this say? When we have a long descender and a UE vowel, the consonent 
 
 ## Types of Substitution Feature
 
-### single substitution
-### multiple substitution
-### alternate substitution
-### ligature substitution
+### Single Substitution
+
+The simplest type of substitution feature is a single substitution: one glyph becomes another glyph when the feature is turned on. A good example of this is small capitals: when your small capitals feature is turned on, you substitute "A" by "A.sc", "B" by "B.sc" and so on. Arabic joining is another example: the shaper will automatically turn on the `fina` feature for the final glyph in a conjoined form.
+
+The possible syntaxes for a single substitution are:
+
+    sub <glyph> by <glyph>;
+    substitute <glyphclass> by <glyph>;
+    substitute <glyphclass> by <glyphclass>;
+
+The first form is the simplest: just change this for that. The second form means "change all members of this glyph class into the given glyph". The third form means "substitute the corresponding glyph from class B for the one in class A". So to implement small caps, we could do this:
+
+    feature smcp {
+      substitute [a-z] by [A.sc - Z.sc];
+    }
+
+To implement Arabic final forms, we would do something like this:
+
+    feature fina {
+        sub uni0622 by uni0622.fina; # Alif madda
+        sub uni0623 by uni0623.fina; # Alif hamza
+        sub uni0624 by uni0624.fina; # Waw hamza
+        ...
+    }
+
+### Multiple substitution
+
+Single substitution was one-to-one. Multiple substitution is one-to-many: it decomposes one glyph into multiple different glyphs. The syntax is pretty similar, but with one thing on the left of the `by` and many things on the right.
+
+This is a pretty rare thing to want to do, but it can be useful if you have situations where composed glyphs with marks are replaced by a decomposition of another glyph and a combining mark. For example, sticking with the Arabic final form idea, if you haven't designed a specific glyph for alif madda in final form, you can get around it by doing this:
+
+    feature fina {
+        # Alif madda -> final alif + madda above
+        sub uni0622 by uni0627.fina uni0653;
+    }
+
+### Alternate substitution
+
+### Ligature substitution
+
+We've done one to one, and we've done one to many - ligature substitution is a many-to-one substitution. You have multiple glyphs on the left of the `by` and one on the right. The classic example is "fi", but let's stick with the Arabic theme. 
+
 ### contextual substitution
 ### chained contextual substitution
 ### extended substitution
@@ -273,15 +321,11 @@ What does this say? When we have a long descender and a UE vowel, the consonent 
 
 ## Features in Practice
 
-### Ligatures
+(Refer to localization chapter)
 
-f_i in feature language
-
-### Small caps
 ### Superscript / Subscript
 ### Stylistic Alternates
 ### Contextual Alternates
-
 
 ### Positioning
 
