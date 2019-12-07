@@ -10,7 +10,7 @@ In the previous chapter we looked at some of the data tables hiding inside an Op
 
 > When I use the word "instruction" in this chapter, I'm using the term in the computer programming sense - programs are made up of instructions which tell the computer what to do, and we want to be telling our shaping engine what to do. In the font world, the word "instruction" also has a specific sense related to hinting of TrueType outlines, which we'll cover in the chapter on hinting.
 
-XXX Quick explanation here.
+"Smart fonts", such as those enabled by OpenType features, can perform a range of typographic refinements based on data within the font, from kerning, ligature substitution, making alternate glyphs available to the user, script-specific and language-specific forms, through to complete substitution, reordering and repositioning of glyphs.
 
 Specifically, two tables within the font - the `GPOS` and `GSUB` tables - provide for a wide range of context-sensitive font transformations. `GPOS` contains instructions for altering the position of glyph. The canonical example of context-sensitive repositioning is *kerning*, which modifies the space between two glyphs depending on what those glyphs are, but `GPOS` allows for many other kinds of repositioning instructions.
 
@@ -24,7 +24,9 @@ OpenType instructions are arranged in a hierarchical fashion: an instruction whi
 
 When a shaping engine processes a run of text, it first determines which features are in play for this run. While a feature can be called anything you like, layout applications will pass certain well-known feature names when the user asks for a particular typographic refinement. For instance, if you hit the "small caps" icon in your word processor, the word processor will ask the shaping engine to process the `smcp` feature. At the same time, the font itself can ask for certain features to be processed by default - the `liga` feature is often turned on by default to provide for standard ligature processing. The application will also tell the shaper what language and script is in use. So in our example, the shaping engine will run through all the lookups within the `smcp` and `liga` features for the language/script combination in use.
 
-We'll start our investigation of features once again by experiment, and from the simplest possible source. As we mentioned, the canonical example of a `GPOS` feature is kerning. (The `kern` feature - again one which is generally turned on by default by the font.) XXX note TT kern table.
+We'll start our investigation of features once again by experiment, and from the simplest possible source. As we mentioned, the canonical example of a `GPOS` feature is kerning. (The `kern` feature - again one which is generally turned on by default by the font.)
+
+> As with all things OpenType, there are two ways to do it. There's also a `kern` *table*, but that's a holdover from the older TrueType format. If you're using CFF PostScript outlines, you need to use the `GPOS` table for kerning as we describe here - and of course, using `GPOS` lets you do far more interesting things than the old `kern` table did. Still, you may still come across fonts with TrueType outlines and an old-style `kern` table.
 
 We're going to take our test font from the previous chapter. Right now it has no `GPOS` table, and the `GSUB` table contains no features, lookups or rules; just a version number:
 
@@ -141,9 +143,13 @@ and a lookup like this:
 
 The rules all start with a rule name and end with a semicolon, but what is in the middle depends on the nature of the rule. This kerning rule alters glyphs positions, so it is a `pos` rule (you can also spell this `position`, if you like). There are various kinds of `pos` rule, but the one we want has three parameters: after glyph "A" and before glyph "B", alter the horizontal advance by -50 units.
 
-XXX split this out to a separate section
+Now, we've added a rule, and Glyphs has compiled it into our font. How do we know what it actually *did*?
 
-Now is a good time to introduce the `hb-shape` tool, which comes as part of [HarfBuzz](http://harfbuzz.org); it's a very handy utility for testing the application of OpenType features. HarfBuzz is an OpenType shaping engine, used by layout applications. Shaping, as we know, is the process of taking a text, a font, and some parameters and producing a set of glyphs and their positions. `hb-shape` runs the shaping process for us and formats the output of the process in a number of different ways. We can use it to check our kern:
+### Using hb-shape for feature testing
+
+Now is a good time to introduce the `hb-shape` tool; it's a very handy utility for debugging and testing the application of OpenType features - how they affect the glyph stream, their effect on positioning, how they apply in different language and script combinations, and how they interact with each other. Learning to use `hb-shape`, which comes as part of the [HarfBuzz](http://harfbuzz.org) OpenType shaping engine, will help you with a host of OpenType-related problems.
+
+As we've mentioned, HarfBuzz is a shaping engine, typically used by layout applications. Shaping, as we know, is the process of taking a text, a font, and some parameters and producing a set of glyphs and their positions. `hb-shape` is a diagnostic tool which runs the shaping process for us and formats the output of the process in a number of different ways. We can use it to check the kern that we added in the previous section:
 
     $ hb-shape TTXTest-Regular.otf 'AA'
     [A=0+580|A=1+580]
@@ -160,7 +166,7 @@ We didn't need to tell HarfBuzz to do any kerning - the `kern` feature is on by 
     $ hb-shape --features="-kern" TTXTest-Regular.otf 'AB'
     [A=0+580|B=1+618]
 
-As you see in this case, the advance width of the "A" is back to 580 units, because the kerning is not being applied here.
+As you see in this case, the advance width of the "A" is back to 580 units, because the `ab` kern pair is not being applied in this case.
 
 ### Glyph classes
 
@@ -259,7 +265,7 @@ What does this say? When we have a long descender and a UE vowel, the consonent 
 
 ## More about the rule application process
 
-## Types of Positioning Feature
+## Types of Positioning Rule
 
 ### Single adjustment
 ### Pair adjustment
@@ -270,11 +276,15 @@ What does this say? When we have a long descender and a UE vowel, the consonent 
 ### Contextual positioning
 ### Chaining contextual positioning
 
-## Types of Substitution Feature
+## Types of Substitution Rule
+
+XXX
+
+For many of these features, your glyph editing software may do something clever behind the scenes - for example, interpreting specially-named glyphs - to automatically generate the feature code for you. But it's useful to understand what's actually going on underneath, so that you can customize it if it doesn't quite do what you want to it, and as building blocks from which you can build up your own more sophisticated features.
 
 ### Single Substitution
 
-The simplest type of substitution feature is a single substitution: one glyph becomes another glyph when the feature is turned on. A good example of this is small capitals: when your small capitals feature is turned on, you substitute "A" by "A.sc", "B" by "B.sc" and so on. Arabic joining is another example: the shaper will automatically turn on the `fina` feature for the final glyph in a conjoined form.
+The simplest type of substitution feature available in the `GSUB` table is a single, one-to-one substitution: when the feature is turned on, one glyph becomes another glyph. A good example of this is small capitals: when your small capitals feature is turned on, you substitute "A" by "A.sc", "B" by "B.sc" and so on. Arabic joining is another example: the shaper will automatically turn on the `fina` feature for the final glyph in a conjoined form.
 
 The possible syntaxes for a single substitution are:
 
@@ -297,6 +307,8 @@ To implement Arabic final forms, we would do something like this:
         ...
     }
 
+Again, in these particular situations, your font editing software may pick up on glyphs with those "magic" naming conventions and automatically generate the features for you. Single substitutions are simple; let's move on to the next category.
+
 ### Multiple substitution
 
 Single substitution was one-to-one. Multiple substitution is one-to-many: it decomposes one glyph into multiple different glyphs. The syntax is pretty similar, but with one thing on the left of the `by` and many things on the right.
@@ -308,11 +320,43 @@ This is a pretty rare thing to want to do, but it can be useful if you have situ
         sub uni0622 by uni0627.fina uni0653;
     }
 
+This tells the shaper to split up final alif madda into two glyphs; you have the final form of alif, and so long as your madda mark is correctly positioned, you are essentially synthesizing a new glyph out of the two others.
+
 ### Alternate substitution
+
+After one-to-many, we have what OpenType calls "one from many"; that is, one glyph can be substituted by *one out of a set of* glyphs. On the face of it, this doesn't make much sense - how can the engine choose which "one out of the set" it should substitute? Well, the answer is: it doesn't. This substitution is designed for features where the shaping engine is expected to pass a set of glyphs to the user interface, so that the user can choose which one they want.
+
+One such feature is `aalt`, "access all alternates", which is used by the "glyph palette" window in various pieces of design software. The idea behind this feature is that a user selects a glyph, and the design software asks the shaping engine to return the set of all possible glyphs that the user might want to use instead of that glyph - all the different swash, titling, small capitals or other variants:
+
+    feature aalt {
+      sub A from [A.swash A.ss01 A.ss02 A.ss03 A.sc];
+      sub B from [B.swash B.ss01 B.ss02 B.ss03 B.sc];
+      ...
+    }
+
+Again, this is the sort of thing your font editor might do for you automatically (this is why we use computers, after all), and I can't think of any global-script type usage of this lookup type, but I'm including it here for completeness.
+
+> If you peruse the registered feature tags list in the OpenType specification you might find various references to features which should be implemented by GSUB lookup type 3, but the dirty little secret of the OpenType feature tags list is that many of the features are, shall we say... *aspirational*. They were proposed, accepted, and are now documented in the specification, but nobody ever actually got around to implementing them. The `rand` feature, for example, should perform randomisation, which ought to be an excellent use case for "choose one glyph from a set". But no software ever turns that feature on, and no shaping engine returns a random glyph in response. Shame, really.
 
 ### Ligature substitution
 
-We've done one to one, and we've done one to many - ligature substitution is a many-to-one substitution. You have multiple glyphs on the left of the `by` and one on the right. The classic example is "fi", but let's stick with the Arabic theme. 
+We've done one to one, and we've done one to many - *ligature substitution* is a many-to-one substitution. You substitute multiple glyphs on the left `by` the one on the right.
+
+The classic example for Latin script is how the two glyphs "f" and "i" become the single glyph "fi", but let's take a more interesting example. In the Khmer script, when two consonants appear without a vowel between them, the second consonant is written below the first and in a special form. This consonant stack is called a "coeng", and the convention in Unicode is to encode the stack as CONSONANT 1, U+17D2 KHMER SIGN COENG, CONSONANT 2. (You need the explicit coeng because Khmer is written without word boundaries, and a word-ending consonant followed by a word-beginning consonant shouldn't trigger a stack.)
+
+So, whenever we see U+17D2 KHMER SIGN COENG followed by a consonant, we should transform this into the special form of the consonant and tuck it below the base consonant.
+
+![](features/khmer.png)
+
+As you can see from the diagram above, the first consonant doesn't change; we just need to transform the coeng sign plus the second consonant into the coeng form of that consonant, and then position it appropriately under the first consonant. We know how to muck about with positioning, but for now we need to turn those two glyphs into one glyph. We can use a ligature substitution lookup to do this. We create a `rlig` (required ligature) feature, which is a ligature that is "required to be used in normal conditions" and "important for some scripts to insure correct glyph formation", and replace the two glyphs U+17D2 KHMER SIGN COENG plus a consonant, with the coeng forms:
+
+    feature rlig {
+      sub uni17D2 uni1780 by uni1780.coeng;
+      sub uni17D2 uni1781 by uni1781.coeng;
+      ...
+    }
+
+Another example is the Arabic lam alif.
 
 ### contextual substitution
 ### chained contextual substitution
@@ -320,6 +364,8 @@ We've done one to one, and we've done one to many - ligature substitution is a m
 ### reverse chained contextual substitution
 
 ## Features in Practice
+
+XXX list of (implemented) OT features
 
 (Refer to localization chapter)
 
