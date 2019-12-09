@@ -1,0 +1,14 @@
+\begin[papersize=150pt x 100pt]{document}
+\font[family=Hind,script=dev2,features=-pres]
+
+\noindent Without \font[family=Consolas]{pres} feature:
+\smallskip
+\font[size=20pt]{हि + ख = हिख}
+
+\font[family=Hind,script=dev2,features=+pres]\medskip
+
+\noindent With \font[family=Consolas]{pres} feature:
+\smallskip
+\font[size=20pt]{हि + ख = हिख}
+\nofolios
+\end{document}

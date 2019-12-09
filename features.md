@@ -200,9 +200,11 @@ Second, if we look at the Devanagari glyph sequence "NA UUE LLA UUE DA UUE " (рд
 
 ![](features/noto.svg)
 
-We see that in the case of the "NA UUE" and "LLA UUE" combinations, the vowel sign UUE is normally positioned at a fixed distance below the headline, regardless of the depth of the base character. (So we're not using mark to base and anchors here, for those of you who have read ahead.) XXX Reword to make more clear
+You should be able to see that in the first two combinations ("NA UUE" and "LLA UUE"), the vowel sign UUE appears at the same depth; regardless of how far below the headline the base character reaches, the vowel sign is being positioned at a fixed distance below the headline. (So we're not using mark to base and anchors here, for those of you who have read ahead.)
 
-However, if we attached the vowel sign to the "DA", we'd get a collision with the DA's curly tail. So in a DA+UUE sequence, we have to do a bit of *vertical* kerning: move the vowel sign down a bit when applied to a long descender. Here's the code to do that (which I've simplified to make it more readable):
+However, if we attached the vowel sign to the "DA" at that same fixed position, it would collide with the DA's curly tail. So in a DA+UUE sequence, we have to do a bit of *vertical* kerning: we need to move the vowel sign down a bit when it's been applied to a long descender.
+
+Here's the code to do that (which I've simplified to make it more readable):
 
     feature dist {
       script dev2;
@@ -265,16 +267,7 @@ What does this say? When we have a long descender and a UE vowel, the consonent 
 
 ## More about the rule application process
 
-## Types of Positioning Rule
-
-### Single adjustment
-### Pair adjustment
-### Cursive attachment
-### Mark-to-base
-### Mark-to-ligature
-### Mark-to-mark
-### Contextual positioning
-### Chaining contextual positioning
+Scripts and languages. Default. Ignore. Sub first then position
 
 ## Types of Substitution Rule
 
@@ -334,9 +327,13 @@ One such feature is `aalt`, "access all alternates", which is used by the "glyph
       ...
     }
 
-Again, this is the sort of thing your font editor might do for you automatically (this is why we use computers, after all), and I can't think of any global-script type usage of this lookup type, but I'm including it here for completeness.
+Again, this is the sort of thing your font editor might do for you automatically (this is why we use computers, after all).
 
-> If you peruse the registered feature tags list in the OpenType specification you might find various references to features which should be implemented by GSUB lookup type 3, but the dirty little secret of the OpenType feature tags list is that many of the features are, shall we say... *aspirational*. They were proposed, accepted, and are now documented in the specification, but nobody ever actually got around to implementing them. The `rand` feature, for example, should perform randomisation, which ought to be an excellent use case for "choose one glyph from a set". But no software ever turns that feature on, and no shaping engine returns a random glyph in response. Shame, really.
+XXX Math ssty; khaled says "the layout engine should select the first or the second alternate based on script level (e.g. first or second level superscript). Alternates other than the first two will probably be ignored (there are only two script levels in TeX-like math engines).""
+
+> If you peruse the registered feature tags list in the OpenType specification you might find various references to features which should be implemented by GSUB lookup type 3, but the dirty little secret of the OpenType feature tags list is that many of the features are, shall we say... *aspirational*. They were proposed, accepted, and are now documented in the specification, and frankly they seemed like a really good idea at the time. But nobody ever actually got around to implementing them.
+> 
+> The `rand` feature, for example, should perform randomisation, which ought to be an excellent use case for "choose one glyph from a set". But no software ever turns that feature on, and no shaping engine returns a random glyph in response. Shame, really.
 
 ### Ligature substitution
 
@@ -356,16 +353,68 @@ As you can see from the diagram above, the first consonant doesn't change; we ju
       ...
     }
 
-Another example is the Arabic lam alif.
+### Contextual Substitution
 
-### contextual substitution
+The substitutions we've seen so far have applied globally - whenever the input glyph matches the rule, the substitution gets made. But what if we want to say that the rule should only apply in certain circumstances?
+
+The next three lookups do just this. They set the *context* in which a rule applies, and then they either specify a substitution to be carried out when the context matches or they can refer to another lookup. The context is made up of what comes before the sequence we want to match (the prefix, or *backtrack*), the input sequence itself, and what comes after the input sequence (the suffix, or *lookahead*).
+
+We'll start with a silly example to demonstrate the concept: suppose we want to apply the `f i -> f_i` ligature, but only after a capital letter. In this case, the *backtrack* is the set of capital letters, the *input* is `f i`, and the *lookahead* is empty (not provided). Here is the ordinary ligature substitution, which we would use if we didn't care about the context:
+
+    sub f i by f_i;
+
+To turn this into a contextual substitution, we write down the whole sequence - backtrack, input, lookahead - and mark each element of the input sequence with an apostrophe character. That gives us:
+
+    sub [A - Z] f' i' by f_i;
+
+Now the ligature substitution is conditioned on the upper-case letters. (Although we would probably want to use a glyph class rather than `[A-Z]` to allow for accented letters.)
+
+Note carefully what the apostrophe characters do in this rule: they mark the sequence to be replaced. If you were to read it without thinking about the apostrophes, you might think that the rule substitutes the *capital* as well as the f and the i by the ligature. But that is not what happens. When apostrophes are present, we have a contextual substitution, and only those input glyphs which are marked will be replaced.
+
+OK, now we are a bit more clear on the concept, let's try a more reasonable example. Devanagari is an abugida script, where each consonant has an implicit vowel "a" sound. If you want to change that vowel, you precede the consonant with a *matra*. The "i" matra looks a little bit like the Latin letter f, but its hook is normally designed to stretch across the length of the consonant it follows. Of course, this gives us a problem: the consonants have differing widths. What we need to do, then, is design a bunch of i-matra glyphs of different widths, and when i-matra is followed by a consonant, substitute it by the variant matra glyph with the appropriate width. For example:
+
+    @width1_consonants = [ra-deva rra-deva];
+    @width2_consonants = [ttha-deva tha-deva];
+    @width3_consonants = [ka-deva nga-deva ...]
+    ...
+
+    feature pres {
+      sub iMatra-deva' @width1_consonants by iMatra-deva.1;
+      sub iMatra-deva' @width2_consonants by iMatra-deva.2;
+      sub iMatra-deva' @width3_consonants by iMatra-deva.3;
+      ...
+    }
+
+We put this in the `pres` (pre-base substitution) feature, which is designed for substituting pre-base vowels with their conjunct forms, and is normally turned on by shapers when handling Devanagari. The following figure shows the effect of the feature above:
+
+![](features/i-matra.png)
+
+ignore rules
+
 ### chained contextual substitution
-### extended substitution
+
+
+### extension substitution
+
 ### reverse chained contextual substitution
+
+Urdu
+
+## Types of Positioning Rule
+
+### Single adjustment
+### Pair adjustment
+### Cursive attachment
+### Mark-to-base
+### Mark-to-ligature
+### Mark-to-mark
+### Contextual positioning
+### Chaining contextual positioning
+
 
 ## Features in Practice
 
-XXX list of (implemented) OT features
+XXX list of (implemented) OT features - how do you know which feature to use?
 
 (Refer to localization chapter)
 
@@ -374,6 +423,8 @@ XXX list of (implemented) OT features
 ### Contextual Alternates
 
 ### Positioning
+
+## FontDame / VOLT?
 
 ## How features are stored
 
@@ -424,5 +475,3 @@ If you think that's an awful lot of effort to go to just to change the letters "
 
 Thankfully, unless you're implementing some of these shaping or font editing technologies yourself, you can relax - it mostly all just works.
 
-## Other opentype tables (not related to internationalisation)
-### Color fonts
