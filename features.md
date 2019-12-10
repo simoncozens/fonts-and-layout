@@ -18,11 +18,15 @@ The other table, `GSUB`, contains instructions for substituting some glyphs for 
 
 ## Features, lookups and rules
 
-XXX Introduce by example first.
+OpenType instructions are arranged in a hierarchical fashion: an instruction which modifies the position or content of some glyphs is called a *rule*. Rules are grouped into sets called *lookups*, and lookups are placed into *features* based on what they're for. You might want to refine your typography in different ways at different times, and turning on or off different combinations of features allows you to do this.
 
-OpenType instructions are arranged in a hierarchical fashion: an instruction which modify the position or content of some glyphs is called a *rule*. Rules are grouped into sets called *lookups*, and lookups are categorised into *features*. Features apply to particular combinations of *language* and *script*.
+For instance, if you hit the "small caps" icon in your word processor, the word processor will ask the shaping engine to turn on the `smcp` feature. The shaping engine will run through the list of features in the font, in the order that they have been specified by the font. When it gets to the `smcp` feature, it will look at the lookups inside that feature, look at each rule within those lookups, and apply them in turn. These rules will turn the lower case letters into small caps:
 
-When a shaping engine processes a run of text, it first determines which features are in play for this run. While a feature can be called anything you like, layout applications will pass certain well-known feature names when the user asks for a particular typographic refinement. For instance, if you hit the "small caps" icon in your word processor, the word processor will ask the shaping engine to process the `smcp` feature. At the same time, the font itself can ask for certain features to be processed by default - the `liga` feature is often turned on by default to provide for standard ligature processing. The application will also tell the shaper what language and script is in use. So in our example, the shaping engine will run through all the lookups within the `smcp` and `liga` features for the language/script combination in use.
+![features](features/feature-hierarchy.png)
+
+So some features are turned on or off as a result of the user's choice. The font itself can ask for certain features to be processed by default - for example, the `liga` feature is often turned on by default to provide for standard ligature processing, while there is another feature (`rlig`) for required ligatures, those which should always be applied even if the user doesn't want explicit ligatures. Some features are *always* processed as a fundamental part of the shaping process, while others are optional and aesthetic. Later in the chapter, we will look at some of the common features registered in the OpenType specification, and what they are used for.
+
+Features apply to particular combinations of *language* and *script*. When a shaping engine processes a run of text, it first determines which features are in play for this run. The application will also tell the shaper what language and script is in use. So in our example, the shaping engine will run through all the lookups within the `smcp` and `liga` features for the language/script combination in use.
 
 We'll start our investigation of features once again by experiment, and from the simplest possible source. As we mentioned, the canonical example of a `GPOS` feature is kerning. (The `kern` feature - again one which is generally turned on by default by the font.)
 
@@ -99,7 +103,11 @@ Here is what we get:
 
 Let's face it: this is disgusting. The hierarchical nature of rules, lookups, features, scripts and languages mean that reading the raw contents of these tables is incredibly difficult. (Believe it or not, TTX has actually *simplified* the real representation somewhat for us.) We'll break it down and make sense of it all later in the chapter.
 
-Instead, we're going to use a more readable format. The Adobe Font Development Kit for OpenType (AFDKO) is a set of tools for manipulating OpenType fonts, and it specifies a more human-friendly *feature language*. In almost all cases, we (or our font editing software) write features in this feature language, and this gets compiled into the `GPOS` and `GSUB` representations shown above. But it's possible, with a bit of work, to go the other way around and turn the `GPOS` and `GSUB` tables inside a font back into the feature language.
+Instead, we're going to use a more readable format. The Adobe Font Development Kit for OpenType (AFDKO) is a set of tools for manipulating OpenType fonts, and it specifies a more human-friendly *feature language*. In almost all cases, we (or our font editing software) write features in this feature language, and this gets compiled into the `GPOS` and `GSUB` representations shown above.
+
+> There are a number of alternatives to AFDKO for specifying OpenType layout features - Microsoft's VOLT (Visual OpenType Layout Tool) allows you to create features and proof and preview them visually. Monotype also has their own internal editor, FontDame, which lays out OpenType features in a text file.
+
+But it's also possible, with a bit of work, to go the other way around and turn the `GPOS` and `GSUB` tables inside a binary OpenType font back into a readable feature language, so that we can see what the font is doing.
 
 There are a few ways we could do this. One user-friendly way is to use the [FontForge](https://fontforge.github.io/en-US/) editor. Within the "Font info" menu for a font, we can choose the "lookups" tab, right-click on a lookup, and choose "Save Feature File...":
 
@@ -231,7 +239,6 @@ Now we are using a different form of the `pos` instruction *and* a different for
 
     pos @longdescenders 0 \uni0956 <0 -90 0 0>;
 
-
 Let's take the different form of the `pos` instruction first. Whereas the three-argument form (`glyph glyph distance`) applied the value record to the first glyph, this four-argument form (`glyphA distanceA glyphB distanceB`) allows you to alter the position and advance of *both* glyphs (or glyph sets) independently. To take a stupid example:
 
     pos A 0 B 50
@@ -267,7 +274,13 @@ What does this say? When we have a long descender and a UE vowel, the consonent 
 
 ## More about the rule application process
 
-Scripts and languages. Default. Ignore. Sub first then position
+Scripts and languages.
+What a feature actually is.
+Default. exclude_dflt;
+Ignore.
+Sub first then position.
+Order of execution. Stopping.
+Reusable lookups
 
 ## Types of Substitution Rule
 
@@ -389,6 +402,7 @@ We put this in the `pres` (pre-base substitution) feature, which is designed for
 
 ![](features/i-matra.png)
 
+At each text position, the contextual rules are tried in turn, and the first matching rule is applied. 
 ignore rules
 
 ### chained contextual substitution
@@ -415,7 +429,7 @@ Urdu
 ## Features in Practice
 
 XXX list of (implemented) OT features - how do you know which feature to use?
-
+Order of features. (Opentype cookbook)
 (Refer to localization chapter)
 
 ### Superscript / Subscript
@@ -423,8 +437,6 @@ XXX list of (implemented) OT features - how do you know which feature to use?
 ### Contextual Alternates
 
 ### Positioning
-
-## FontDame / VOLT?
 
 ## How features are stored
 
