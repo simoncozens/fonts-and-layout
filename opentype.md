@@ -474,6 +474,20 @@ Here we can see the two contours of our A, as a series of on-curve and off-curve
 
 ![](opentype/bezier.svg)
 
+Sometimes you might open up a `glyf` table and find something confusing:
+
+    <TTGlyph name="C" xMin="125" yMin="-20" xMax="1231" yMax="1483">
+      <contour>
+        <pt x="827" y="1331" on="1"/>
+        <pt x="586" y="1331" on="0"/>
+        <pt x="307" y="1010" on="0"/>
+        <pt x="307" y="731" on="1"/>
+        ...
+
+There are two off-curve points between the on-curves! Does this mean that we're suddenly using cubic Bézier curves in our TrueType outlines? Nope, the font is doing something clever here to save space: there is an "implied" on-curve point located half-way between the off-curves points. Software handling these curves needs to insert the implied on-curve point.
+
+![](opentype/implied.png)
+
 What about the `loca` table? The `glyf` table contains all contours for all the glyphs, one after another as a big long binary lump. When you're trying to find a glyph, you look up its glyph index in the `loca` table, and it'll tell you which byte of the `glyf` table you need to jump to.
 
 ## And more tables!
