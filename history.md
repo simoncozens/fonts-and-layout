@@ -1,6 +1,7 @@
 ---
 layout: chapter
 title: A Brief History of Type
+finished: true
 ---
 
 * TOC
