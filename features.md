@@ -199,12 +199,7 @@ Now we can use `@Alike` instead of `A` to refer to capital A and its diacritic f
 
 ### Value records
 
-Let's look at another simple positioning feature, as way to understand the few more concepts, including that of a value record.
-
-First, an example by Yannis Haralambous, in his *Fonts and Encodings*: 
-
-
-Second, if we look at the Devanagari glyph sequence "NA UUE LLA UUE DA UUE " (नॗ ळॗ दॗ) in Noto Sans Devangari:
+Let's look at another simple positioning feature, as way to understand the few more concepts, including that of a value record. If we look at the Devanagari glyph sequence "NA UUE LLA UUE DA UUE " (नॗ ळॗ दॗ) in Noto Sans Devangari:
 
 ![](features/noto.svg)
 
@@ -274,10 +269,19 @@ What does this say? When we have a long descender and a UE vowel, the consonent 
 
 ## More about the rule application process
 
-Scripts and languages.
+Near the start of this chapter, we mentioned that OpenType features are collections of rules that apply in certain conditions (either when the feature is turned on by the user, when it's on by default, or when it's processed automatically by the shaper). Now we understand a little bit about what sort of things we can do with a feature, we are in a position to give the full rules for how OpenType layout works.
+
+First, the shaper uses the character map to turn Unicode characters into glyph IDs internal to the font; it then processes the GSUB table, and then the GPOS table. (Substitutions first, and then positioning later - this makes sense, because you need to know what glyphs you're going to draw before you position them...)
+
+The first step in processing the table is finding out the appropriate features to apply, and this is done on the basis of script and language. We will look more into how that happens in the next chapter. At the point we have found the appropriate list of features to be processed. (See the figure at the start of this chapter again.)
+
+Now we go through the features *in the order they are defined in the font*. So you need to be *very* careful how you order your features, and think about how features interact.
+
+> Check this
+
+XXX Lookup Flags
 What a feature actually is.
 Default. exclude_dflt;
-Ignore.
 Sub first then position.
 Order of execution. Stopping.
 Reusable lookups
@@ -342,11 +346,11 @@ One such feature is `aalt`, "access all alternates", which is used by the "glyph
 
 Again, this is the sort of thing your font editor might do for you automatically (this is why we use computers, after all).
 
-XXX Math ssty; khaled says "the layout engine should select the first or the second alternate based on script level (e.g. first or second level superscript). Alternates other than the first two will probably be ignored (there are only two script levels in TeX-like math engines).""
+Another use of this substitution comes in mathematics handling. The `ssty` feature returns a list of alternate glyphs to be used in superscript or subscript circumstances: the first glyph in the set should be for first-level sub/superscripts, and the second glyph for second-level sub/superscripts. (Any other glyphs returned will be ignored, as math typesetting models only recognise two levels of scripting.)
 
 > If you peruse the registered feature tags list in the OpenType specification you might find various references to features which should be implemented by GSUB lookup type 3, but the dirty little secret of the OpenType feature tags list is that many of the features are, shall we say... *aspirational*. They were proposed, accepted, and are now documented in the specification, and frankly they seemed like a really good idea at the time. But nobody ever actually got around to implementing them.
 > 
-> The `rand` feature, for example, should perform randomisation, which ought to be an excellent use case for "choose one glyph from a set". But no software ever turns that feature on, and no shaping engine returns a random glyph in response. Shame, really.
+> The `rand` feature, for example, should perform randomisation, which ought to be an excellent use case for "choose one glyph from a set". The Harfbuzz shaper has only recently implemented that feature, but we're still waiting for any application software to request it. Shame, really.
 
 ### Ligature substitution
 
@@ -402,10 +406,48 @@ We put this in the `pres` (pre-base substitution) feature, which is designed for
 
 ![](features/i-matra.png)
 
-At each text position, the contextual rules are tried in turn, and the first matching rule is applied. 
-ignore rules
+At each text position, the contextual rules are tried in turn, and the first matching rule is applied. When the rule is matched, the processing of this feature ends.
 
-### chained contextual substitution
+In some cases, you may want to forego a substitution or set of substitutions in particular contexts. For example, in Malayalam, the sequence ka, virama, sa) should appear as a stacked Akhand character "Kssa" - except if the sa is followed by certain vowel sounds which change the form of the sa.
+
+![](features/manjari.png)
+
+We'll achieve this in two steps. First, we'll put a contextual rule in the `akhn` feature to make the Kssa conjunct. Even though this is a simple substitution we need to write it in the contextual form (using apostrophes, but with an empty backtrack and empty lookahead):
+
+    feature akhn {
+      sub ka-malayalam' halant-malayalam' sa-malayalam' by kssa;
+    }
+
+This creates the kssa akhand form. Now we need another rule to say "but if you see ka, virama, sa and then a matra, don't do that substitution." To do this, we use the `ignore` keyword:
+
+    @matras = [uMatra-malayalam uuMatra-malayalam ...];
+
+    feature akhn {
+      ignore sub ka-malayalam' halant-malayalam' sa-malayalam' @matras;
+      sub ka-malayalam' halant-malayalam' sa-malayalam' by kssa;
+    }
+
+This `ignore` rule ends processing of the current lookup if the context matches. You can have multiple `ignore` rules: once one of them is matched, processing of the current lookup is terminated. For instance, we also want to forego the akhand form in the sequence "ksra" (because we're going to want to use the "sra" ligature in that sequence instead):
+
+    feature akhn {
+      ignore sub ka-malayalam' halant-malayalam' sa-malayalam' @matras;
+      ignore sub ka-malayalam' halant-malayalam' sa-malayalam' halant-malayalam' 'ra-malayalam;
+      sub ka-malayalam' halant-malayalam' sa-malayalam' by kssa;
+    }
+
+We said that `ignore` only terminates processing of a *lookup*. If you only want to skip over a given number of rules, but consider later rules in the same feature, you need to isolate the relevant `ignore`/`sub` rules inside their own lookup:
+
+    feature akhn {
+      lookup Ksa {
+        ignore sub ka-malayalam' halant-malayalam' sa-malayalam' @matras;
+        ignore sub ka-malayalam' halant-malayalam' sa-malayalam' halant-malayalam' 'ra-malayalam;
+        sub ka-malayalam' halant-malayalam' sa-malayalam' by kssa;
+        # "ksra" is ignored here.
+      }
+      # But could be matched here.
+    }
+
+### Chained Contextual Substitution
 
 
 ### extension substitution
@@ -429,7 +471,6 @@ Urdu
 ## Features in Practice
 
 XXX list of (implemented) OT features - how do you know which feature to use?
-Order of features. (Opentype cookbook)
 (Refer to localization chapter)
 
 ### Superscript / Subscript
