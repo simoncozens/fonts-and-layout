@@ -1,6 +1,7 @@
 ---
 layout: chapter
 title: OpenType Features
+target: 9000
 ---
 
 * TOC
@@ -213,13 +214,13 @@ Here's the code to do that (which I've simplified to make it more readable):
       script dev2;
       language dflt;
       @longdescenders = [
-        \uni091D # JHA (झ)
-        \uni0926 # DA (द)
+        uni091D # JHA (झ)
+        uni0926 # DA (द)
         # And various rakar form ligatures
-        \uni0916_uni094D_uni0930.rkrf \uni091D_uni094D_uni0930.rkrf
-        \uni0926_uni094D_uni0930.rkrf ];
-      pos @longdescenders 0 \uni0956 <0 -90 0 0>; # ॖ
-      pos @longdescenders 0 \uni0957 <0 -145 0 0>; # ॗ
+        uni0916_uni094D_uni0930.rkrf uni091D_uni094D_uni0930.rkrf
+        uni0926_uni094D_uni0930.rkrf ];
+      pos @longdescenders 0 uni0956 <0 -90 0 0>; # ॖ
+      pos @longdescenders 0 uni0957 <0 -145 0 0>; # ॗ
     }
 
 What are we doing here? We are defining a feature called `dist`, which is a little like `kern` but for adjusting the distances between pre- and post-base marks and their base characters. It applies to the script "Devanagari v.2" - this is another one of those famous OpenType compromises; Microsoft's old Indic shaper used the script tag `deva` for Devanagari, but when they came out with a new shaper, the way to select the new behavior was to use a new language tag, `dev2`. For any language system using this script, we apply the following rules: when a long descender has a UUE attached, the UUE mark is shifted by 145 units downwards.
@@ -228,17 +229,17 @@ When we kerned two characters horizontally, we did this:
 
     pos @Alike B -50;
 
-The `-50` in that rule was a value record, a way of specifying a distance in Opentype feature rules. A bare number like this as a value record is interpreted as shifting the X advance by the given number of units.
+The `-50` in that rule was a *value record*, a way of specifying a distance in Opentype feature rules. A bare number like this as a value record is interpreted as shifting the X advance by the given number of units.
 
 Now we are using a different form of the `pos` instruction *and* a different form of the value record:
 
-    pos @longdescenders 0 \uni0956 <0 -90 0 0>;
+    pos @longdescenders 0 uni0956 <0 -90 0 0>;
 
 Let's take the different form of the `pos` instruction first. Whereas the three-argument form (`glyph glyph distance`) applied the value record to the first glyph, this four-argument form (`glyphA distanceA glyphB distanceB`) allows you to alter the position and advance of *both* glyphs (or glyph sets) independently. To take a stupid example:
 
     pos A 0 B 50
 
-What does this do? When "B" follows "A" in a text, we add 50 units of advance to the "B", opening up the space between "B" and whatever glyph follows it.
+What does this do? When "B" follows "A" in a text, we add 50 units of advance to the "B"; this has the effect of opening up the space between "B" and whatever glyph follows it.
 
 But in our Devanagari example, we don't want to move the mark across - we want to move it down. Enter the second form of the value record:
 
@@ -263,9 +264,9 @@ Finally, you should be able to see that the fourth example, changing the vertica
 
 But at least we now have all the pieces we need to contextually move a mark down a bit from its usual position under a base character: a four-argument `pos` instruction which lets us move the second character in a pair, and a four-element value record which lets us move things up and down. Hence:
 
-    pos @longdescenders 0 \uni0956 <0 -90 0 0>;
+    pos @longdescenders 0 uni0956 <0 -90 0 0>;
 
-What does this say? When we have a long descender and a UE vowel, the consonent positioned normally (`0`), but the vowel sign gets its position shifted by 90 units downwards. That should be enough to avoid the collision.
+What does this say? When we have a long descender and a UE vowel, the consonant positioned normally (`0`), but the vowel sign gets its position shifted by 90 units downwards. That should be enough to avoid the collision.
 
 ## More about the rule application process
 
@@ -275,22 +276,70 @@ First, the shaper uses the character map to turn Unicode characters into glyph I
 
 The first step in processing the table is finding out the appropriate features to apply, and this is done on the basis of script and language. We will look more into how that happens in the next chapter. At the point we have found the appropriate list of features to be processed. (See the figure at the start of this chapter again.)
 
-Now we go through the features *in the order they are defined in the font*. So you need to be *very* careful how you order your features, and think about how features interact.
+Now we go through the features, one by one, but in a particular order. The general way of thinking about this order is this: first, those "pre-shaping" features which change the way characters are turned into glyphs (such as `ccmp`, `rvrn` and `locl`); next, script-specific shaping features which, for example, reorder syllable clusters (Indic scripts) or implement joining behaviours (Arabic, N'ko, etc.), then required typographic refinements such as required ligatures (think Arabic again), discretionary typographic refinements (small capitals, Japanese centered punctuation, etc.), then positioning features (such as kerning and mark positioning).[^1]
 
-> Check this
+More specifically, Uniscribe processes features for the Latin script in the following order: `ccmp`, `liga`, `clig`, `dist`, `kern`, `mark`, `mkmk`. Harfbuzz does it in the order `rvrn`, either `ltra` and `ltrm` (for left to right contexts) or `rtla` and `rtlm` (for right to left context), then `frac`, `numr`, `dnom`, `rand`, `trak`, the private-use features `HARF` and `BUZZ`, then `abvm`, `blwm`, `ccmp`, `locl`, `mark`, `mkmk`, `rlig`, and then either `calt`, `clig`, `curs`, `dist`, `kern`, `liga`, and `rclt` (for horizontal typesetting) or `vert` (for vertical typesetting).
 
-XXX Lookup Flags
-What a feature actually is.
-Default. exclude_dflt;
-Sub first then position.
-Order of execution. Stopping.
-Reusable lookups
+For other scripts, the order in which features are processed (at least by Uniscribe, although Harfbuzz generally follows Uniscribe's lead) can be found in Microsoft's "Script Development Specs" documents. See, for instance, the specification for [Arabic](https://docs.microsoft.com/en-gb/typography/script-development/arabic); the ordering for other scripts can be accessed using the side menu.
+
+After these default feature lists, any other user-specified features are processed in the order that they are defined in the font, one lookup at a time.
+
+### Lookups
+
+We haven't said much about lookups so far, but lookups are collections of rules. You can define a lookup in a number of ways. The simplest way is implicitly; by not mentioning any lookups inside a feature, the rules you specify are placed in a single, anonymous lookup. So this feature, for positioning superior numerals:
+
+    feature sups {
+      sub one by onesuperior;
+      sub two by twosuperior;
+      sub three by threesuperior;
+    } sups;
+
+is effectively equivalent to this:
+
+    feature sups {
+      lookup sups_1 {
+        sub one by onesuperior;
+        sub two by twosuperior;
+        sub three by threesuperior;
+        } sups_1;
+    } sups;
+
+You can also define named lookups inside a feature:
+
+    feature pnum {
+      lookup pnum_latin {
+        sub zero by zero.prop;
+        sub one by one.prop;
+        sub two by two.prop;
+        ...
+      } pnum_latin;
+      lookup pnum_arab {
+        sub uni0660 by uni0660.prop;
+        sub uni0661 by uni0661.prop;
+        sub uni0662 by uni0662.prop;
+        ...
+      } pnum_arab;
+    } sups;
+
+Finally, and more usefully, you can define lookups outside of a feature, and then reference them within a feature. For one thing, this allows you to use the same lookup in more than one feature, or in more than one language and script combination:
+
+    lookup myAlternates {
+      sub A by A.001; # Alternate form
+      ...
+    } myAlternates;
+
+    feature salt { lookup myAlternates; } salt;
+    feature ss01 { lookup myAlternates; } ss01;
+
+The first clause *defines* the set of rules called `myAlternates`, which is the *used* in the two stylistic alternate features. This facility will become more useful when we look at chaining rules - when one rule calls another.
+
+Each lookup may also have a *lookup flag*. We will look at examples of using lookup flags when we come to rules which use them.
 
 ## Types of Substitution Rule
 
-XXX
+So the first stage in OpenType layout processing is to go through the appropriate lookups and rules in the substitution table (`GSUB`). These rules rewrite the input stream, substituting one glyph (or a series of glyphs) for other glyphs. The Arabic `medi` feature, for example, makes sure that a glyph in the middle of a word is replaced by the glyph representing its medial form.
 
-For many of these features, your glyph editing software may do something clever behind the scenes - for example, interpreting specially-named glyphs - to automatically generate the feature code for you. But it's useful to understand what's actually going on underneath, so that you can customize it if it doesn't quite do what you want to it, and as building blocks from which you can build up your own more sophisticated features.
+For some of these features, your glyph editing software may do something clever on your behalf - for example, it may implement the `medi` feature automatically, by looking for specially-named glyphs whose names end with `.medi` and generating substitution rules for you. Although that's an incredibly powerful tool, it's important to understand what is actually going on underneath. If you understand the feature code that is being generated behind the scenes, you can customize it if it doesn't quite do what you want, and you can use it as building blocks from which to build up your own more sophisticated features.
 
 ### Single Substitution
 
@@ -447,26 +496,116 @@ We said that `ignore` only terminates processing of a *lookup*. If you only want
       # But could be matched here.
     }
 
+When performing contextual substitutions, you may only be interested in certain kinds of glyph. For example, the Arabic font [Amiri](https://github.com/alif-type/amiri) has an optional stylistic feature whereby if the letter beh follows a waw or rah (for example, in the word ربن - the name "Rabban", or the word "ribbon" in Urdu) then the nukta on the beh is dropped down:
+
+![](features/amiri-beh.png)
+
+By now we know how to achieve this:
+
+    feature ss01 {
+      sub @RaaWaw @aBaaDotBelow' by @aBaaLowDotBelow;
+    } ss01;
+
+The problem is that the text might be vocalised. We still want this rule to apply even if, for example, there is a fatah placed above the rah (رَبَن). We could, of course, attempt to write a context which would apply to rah and waw plus marks all possible combinations of the mark characters, but the easier solution is to tell the shaper that we are not interested in mark characters when applying this rule, only base characters. It's time for those "lookup flags" I told you about:
+
+    feature ss01 {
+      lookupflag IgnoreMarks;
+      sub @RaaWaw @aBaaDotBelow' by @aBaaLowDotBelow;
+    } ss01;
+
+This lookup flag tells the shaper that, when processing this lookup, it should skip over combining marks. There's also `ignoreBaseGlyphs` which does the opposite and skips over base glyphs and *only* processes marks (and ligatures), but it's unlikely you'll ever need that.
+
+> How does the shaper know what's a base glyph and what's a mark? You (or, more likely, your font editor) has to tell it, of course! In the Glyphs editor, for example, glyphs are placed in the "Mark" section if their Unicode value suggests they should be a mark; if you want to assign an arbitrary glyph to the mark category, you can hit command-option-I in the font view when the glyph is selected, and change its category assignment.
+> 
+> The list of glyphs and their categories gets filed into the `GDEF` table in the font. It's also possible to assign glyphs to categories manually by writing AFDKO feature code which rewrites the `GDEF` table contents; see [the feature file specification](http://adobe-type-tools.github.io/afdko/OpenTypeFeatureFileSpecification.html#9.b).
+
 ### Chained Contextual Substitution
 
+A chained contextual substitution is an extension of the contextual substitution rule that calls out to other lookups as it goes along. This allows you to perform more than one substitution for a given context; or choose from a range of substitutions to perform in a given context; or call lookups which call lookups which call lookups...
+
+A simple example is found in the [Libertinus](https://github.com/alif-type/libertinus) fonts. When a Latin capital letter is followed by an accent, then we want to substitute *some* of those accents by specially designed forms to fit over the capitals:
+
+    @capitals = [A B C D E F G H I J K L M N O P Q R S U X Z...];
+    @accents  = [gravecomb acutecomb uni0302 tildecomb ...];
+
+    lookup ccmp_cap_accents {
+      sub acutecomb by acute.cap;
+      sub gravecomb by grave.cap;
+      sub uni0302 by circumflex.cap;
+      sub uni0306 by breve.cap;
+    } ccmp_cap_accents;
+
+    feature ccmp {
+        sub @capitals @accents' lookup ccmp_cap_accents;
+    } ccmp;
+
+What this says is: when we see a capital followed by an accent, we're going to substitute the accent (it's the replacement sequence, so it gets an apostrophe). But *how* we do the substitution depends on another lookup we now reference: acute accents for capital acutes, grave accents for capital graves, and so on. The tilde accent does not have a capital form, so is not replaced.
+
+We can also use this trick to perform a *many to many* substitution, which OpenType does not directly support. Let's take another example from the Amiri font, which contains many calligraphic substitutions and special forms. At the end of a word, the sequence beh rah (بر) *and all similar forms based on the same shape* is replaced by another pair of glyphs with a better calligraphic cadence. How do we do this?
+
+First, we declare our feature and say that we're not interested in mark glyphs. Then, when we see a beh-like glyph (which includes not only beh, but yeh, noon, beh with three dots, and so on) in its medial form and a rah-like glyph (or jeh, or zain...) in its final form, then *both* of those glyphs will be subject to a secondary lookup.
+
+    @aBaa.medi = [ uni0777.medi uni0680.medi ... ];
+    @aRaa.fina = [ uni0691.fina uni0692.fina ... ];
+
+    feature calt {
+      lookupflag IgnoreMarks;
+      sub [@aBaa.medi]' lookup BaaRaaFina
+          [@aRaa.fina]' lookup BaaRaaFina;
+    } calt;
+
+The secondary lookup will turn beh-like glyphs into a beh-rah ligature form of beh, and all of the rah-like glyphs into a beh-rah ligature form of rah:
+
+    lookup BaaRaaFina {
+      sub @aBaa.medi by @aBaa.medi_BaaRaaFina;
+      sub @aRaa.fina by @aRaa.fina_BaaRaaFina;
+    } BaaRaaFina;
+
+Because this lookup will only be executed when beh and rah appear together, and because it will be executed twice in the rule we gave above, it will change both the beh-like glyph *and* the rah-like glyph for their contextual calligraphic variants.
 
 ### extension substitution
 
+XXX
+
 ### reverse chained contextual substitution
 
-Urdu
+XXX Urdu
 
 ## Types of Positioning Rule
 
+XXX
+
 ### Single adjustment
+
+XXX
+
 ### Pair adjustment
+
+XXX
+
 ### Cursive attachment
+
+XXX
+
 ### Mark-to-base
+
+XXX
+
 ### Mark-to-ligature
+
+XXX
+
 ### Mark-to-mark
+
+XXX
+
 ### Contextual positioning
+
+XXX
+
 ### Chaining contextual positioning
 
+XXX
 
 ## Features in Practice
 
@@ -474,10 +613,20 @@ XXX list of (implemented) OT features - how do you know which feature to use?
 (Refer to localization chapter)
 
 ### Superscript / Subscript
+
+XXX
+
 ### Stylistic Alternates
+
+XXX
+
 ### Contextual Alternates
 
+XXX
+
 ### Positioning
+
+XXX
 
 ## How features are stored
 
@@ -528,3 +677,5 @@ If you think that's an awful lot of effort to go to just to change the letters "
 
 Thankfully, unless you're implementing some of these shaping or font editing technologies yourself, you can relax - it mostly all just works.
 
+
+[^1]: See John Hudson's paper [*Enabling Typography*](http://tiro.com/John/Enabling_Typography_(OTL).pdf) for an explanation of this model and its implications for particular features.
