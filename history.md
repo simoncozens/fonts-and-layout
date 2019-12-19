@@ -161,7 +161,7 @@ In 1540, François Guyot released the first *typeface family* - his Double Pica 
 
 But what if nine weights is not enough? More realistically, what if the designer has only provided a regular and a related bold, and you need something in the middle? The one development Adobe attempted to make to their Type 1 PostScript font format in 1991 was the idea of *multiple masters* which aimed to solve this problem: the font would contain two or more sets of outlines, and the user could "blend" their own font from some proportion of the two. They could mix 3 parts the regular weight to 1 part bold weight to create a sort of hemi-semi-bold.
 
-![mm](history/mm.gif)
+![mm](history/MM.gif)
 
 > Adobe Myriad MM, with width (left to right) and weight (top to bottom) masters
 
