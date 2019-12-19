@@ -1,7 +1,7 @@
 ---
 layout: chapter
 title: OpenType Features
-target: 9000
+target: 12000
 ---
 
 * TOC
@@ -563,29 +563,107 @@ The secondary lookup will turn beh-like glyphs into a beh-rah ligature form of b
 
 Because this lookup will only be executed when beh and rah appear together, and because it will be executed twice in the rule we gave above, it will change both the beh-like glyph *and* the rah-like glyph for their contextual calligraphic variants.
 
-### extension substitution
+### Extension Substitution
 
-XXX
+An extension substitution ("GSUB lookup type 7") isn't really a different kind of substitution so much as a different *place* to put your substitutions. If you have a very large number of rules in your font, the GSUB table will run out of space to store them. (Technically, it stores the offset to each lookup in a 16 bit field, so there can be a maximum of 65535 bytes from the lookup table to the lookup data. If previous lookups are too big, you can overflow the offset field.)
 
-### reverse chained contextual substitution
+If your font is not compiling because it's running out of space in the GSUB or GPOS table, you can try adding the keyword `useExtension` to your largest lookups:
 
-XXX Urdu
+    lookup EXTENDED_KERNING useExtension {
+      # Large number of kerning rules follow
+    } EXTENDED_KERNING;
+
+> Kerning tables are obviously an example of very large *positioning* lookups, but they're the most common use of extensions. I haven't seen a *substitution* lookup that's so big it needs to use an extension.
+
+### Reverse chained contextual substitution
+
+The final substitution type is extremely rare. I haven't found any recorded use of it outside of test fonts. It was designed for complex Arabic and Urdu calligraphic (nastaliq style) fonts where, although the input text is processed in right-to-left order, the calligraphic shape of the word is built up in left-to-right order: each glyph is determined by the glyph which *precedes* it in the input order but *follows* it in the writing order.
+
+So reverse chained contextual substitution is a substitution that is applied by the shaper *backwards in time*: it starts at the end of the input stream, and works backwards, and the reason this is so powerful is because it allows you to contextually condition the "current" lookup based on the results from "future" lookups.
+
+As an example, try to work out how you would convert *all* the numerator digits in a fraction into their numerator form. Tal Leming suggests doing something like this:
+
+    lookup Numerator1 {
+        sub @figures' fraction by @figuresNumerator;
+    } Numerator1;
+
+    lookup Numerator2 {
+        sub @figures' @figuresNumerator fraction by @figuresNumerator;
+    } Numerator2;
+
+    lookup Numerator3 {
+        sub @figures' @figuresNumerator @figuresNumerator fraction by @figuresNumerator;
+    } Numerator3;
+
+    lookup Numerator4 {
+        sub @figures' @figuresNumerator @figuresNumerator @figuresNumerator fraction by @figuresNumerator;
+    } Numerator4;
+    # ...
+
+But this is obviously limited: the number of digits processed will be equal to the number of rules you write. To write it for any number of digits, you have to think about the problem in reverse. Start thinking not from the position of the *first* digit, but from the position of the *last* digit and work backwards. If a digit appears just before a slash, it gets converted to its numerator form. If a digit appears just before a digit which has already been converted to numerator form, this digit also gets turned into numerator form. Applying these two rules in a reverse substitution chain gives us:
+
+    rsub @figures' fraction by @figuresNumerator;
+    rsub @figures' @figuresNumerator by @figuresNumerator;
+
+> Notice that although the lookups are *processed* with the input stream in reverse order, they are still *written* with the input stream in normal order of appearance.
+
+This would be a brilliant solution... if the software worked. One reason this lookup type is rare (other than the fact that it breaks your head to try to work out how lookups should be processed backwards) is because it is not as widely supported as the other types. Applications which use CoreText and Harfbuzz can process reverse contextual substitution chains, but those based on Adobe's shaping engine such as Illustrator and InDesign do not support these lookups at the time of writing. (Yes, Adobe wrote the AFDKO. I know.)
 
 ## Types of Positioning Rule
 
-XXX
+After all the substitution rules have been processed, we should have the correct sequence of glyphs that we want to lay out. The next job is to run through the lookups in the `GPOS` table in the same way, to adjust the positioning of glyphs. We have seen one example of positioning rules: a simple kerning rule. We will see in this section that a number of other ways to reposition glyphs are possible.
 
 ### Single adjustment
 
-XXX
+A single adjustment rule just repositions a glyph or glyph class, without contextual reference to anything around it. In Japanese text, all glyphs normally fit into a standard em width and height. However, sometimes you might want to use half-width glyphs, particularly in the case of Japanese comma and Japanese full stop. Rather than designing a new glyph just to change the width, we can use a positioning adjustment:
+
+    feature halt {
+      pos uni3001 <-250 0 -500 0>;
+      pos uni3002 <-250 0 -500 0>;
+    } halt;
+
+Remember that this adjusts the *placement* (placing the comma and full stop) 250 units to the left of where it would normally appear and also the *advance*, placing the following character 500 units to the left of where it would normally appear: in other words we have shaved 250 units off both the left and right sidebearings of these glyphs when the `halt` (half-width alternates) feature is selected.
 
 ### Pair adjustment
 
-XXX
+We've already seen pair adjustment rules: they're called kerns. They take two glyphs or glyphclasses, and move one glyphs around. We've also seen that there are two ways to express a pair adjustment rule. First, you place the value record after the two glyphs/glyph classes, and this adjusts the spacing between them.
+
+    pos A B -50;
+
+Or you can put a value record after each glyph, which tells you how each of them should be repositioned:
+
+    pos @longdescenders 0 uni0956 <0 -90 0 0>;
 
 ### Cursive attachment
 
-XXX
+One theme of this book so far has been the fact that digital font technology is based on the "Gutenberg model" of connecting rectangular boxes together on a flat baseline, and we have to work around this model to accomodate scripts which don't work in that way.
+
+Cursive attachment is one way that this is achieved. If a script is to appear connected, with adjacent glyphs visually joining onto each other, there is an easy way to achieve this: just ensure that every single glyph has an entry stroke and an exit stroke in the same place. In a sense, we did this with the "headline" for our Bengali metrics in [chapter 2](concepts.md#Units). Indeed, you will see some script-style fonts implemented in this way:
+
+![](features/connected-1.png)
+
+But having each glyph have the same entry and exit profile can look unnatural and forced, especially as you have to ensure that the curves don't just have the same *height* but have the same *curvature* at each entry and exit point. (Noto Naskh Arabic somehow manages to make it work.)
+
+A more natural way to do it, particularly for Nastaliq style fonts, is to tell OpenType where the entry and exit points of your glyph are, and have it sew them together. Consider these three glyphs: two medial lams and an initial gaf.
+
+![](features/gaf-lam-lam-1.png)
+
+> (Outlines from Noto Nastaliq Urdu)
+
+As they are, they all sit on the same baseline and don't connect up at all. Now we will add entry and exit anchors in our font editing software, and watch what happens.
+
+![](features/gaf-lam-lam-2.png)
+
+Our flat baseline is no longer flat any more! The shaper has connected the exit anchor of the gaf to the entry anchor of the first lam, and the exit anchor of the first lam to the entry anchor of the second lam. This is cursive attachment.
+
+Glyphs has done this semi-magically for us, but here is what is going on underneath. Cursive attachment is turned on using the `curs` feature, which is on by default for Arabic script. Inside the `curs` feature are a number of cursive attachment positioning rules, which define where the entry and exit anchors are:
+
+    feature curs {
+        position cursive lam.medi <anchor 643 386> <anchor -6 180>;
+        position cursive gaf.init <anchor NULL>    <anchor 35 180>;
+    } curs;
+
+(The initial forms have a `NULL` entry anchor, and of course final forms will have a `NULL` exit anchor.) The shaper is responsible for overlaying the anchors to make the exit point and its adjacent entry point fit together.
 
 ### Mark-to-base
 
