@@ -24,7 +24,27 @@ This font will have support for Arabic and Urdu, as well as Turkish and "default
 
 XXX exclude_dflt goes here
 
-## Features
+## Features in Practice
+
+XXX list of (implemented) OT features - how do you know which feature to use?
+(Refer to localization chapter)
+
+### Superscript / Subscript
+
+XXX
+
+### Stylistic Alternates
+
+XXX
+
+### Contextual Alternates
+
+XXX
+
+### Positioning
+
+XXX
+
 ### Problems with "i"
 
 Turkish i
