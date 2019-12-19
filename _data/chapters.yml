@@ -4,7 +4,7 @@
 - { fn: opentype, title: "How OpenType Works", some: 1}
 - { fn: features, title: "Introduction to OpenType Features", some: 1}
 - { fn: features-2, title: "Substitution and Positioning Rules", some: 1}
-- { fn: localisation, title: "OpenType for Global Scripts", some: 1}
+- { fn: localisation, title: "OpenType for Global Scripts"}
 - { fn: adv-features, title: "Advanced Feature Programming "}
 - { fn: layout, title: "Layout Challenges in Global Type "}
 - { fn: hint, title: "Rasterisation and Hinting "}

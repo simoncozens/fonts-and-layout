@@ -1,5 +1,7 @@
-OpenType for Global Scripts
-===========================
+---
+layout: chapter
+title: OpenType for Global Scripts
+---
 
 In the last chapter, we looked at OpenType features from the perspective of technology: what cool things can we make the font do? In this chapter, however, we're going to look from the perspective of language: how do we make the font support the kind of language features we need? We'll be putting together the substitution and positioning lookups from OpenType Layout that we learnt about in the previous chapter, and using them to create fonts which behave correctly and beautifully for the needs of different scripts and language systems.
 
