@@ -1,6 +1,7 @@
 ---
 layout: chapter
 title: Substitution and Positioning Rules
+finished: true
 ---
 
 As we have seen, OpenType Layout involves first *substituting* glyphs to rewrite the input stream, and then *positioning* glyphs to put them in the right place. We do this by writing collections of *rules* (called lookups). There are several different types of rule, which instruct the shaper to perform the substitution or positioning in subtly different ways.
@@ -366,11 +367,39 @@ This says "you can attach any marks in the class `MV_abvm.bindu` to the glyph `d
 
 ### Mark-to-ligature
 
-XXX
+This next positioning lookup type deals with how ligature substitutions and marks inter-relate. Suppose we have ligated two Thai characters: NO NU (น) and TO TAO (ต) using a ligature substitution rule:
+
+    lookupflag IgnoreMarks;
+    sub uni0E19' uni0E15' by uni0E190E15.liga;
+
+We've ignored any marks here to make the ligature work - but what if there *were* marks? If the input text had a tone mark over the NO NU (น้), how should that be positioned relative to the ligature? We've taken the NO NU away, so now we have `uni0E190E15.liga` and a tone mark that needs positioning. How do we even know which *side* of the ligature to attach the mark to - does it go on the NO NU part of the TO TAO part?
+
+Mark-to-ligature positioning helps to solve this problem. It allows us to define anchors on the ligature which represent where to put anchors for each component part. Here is how we do it:
+
+    feature mark {
+        position ligature uni0E190E15.liga  # Declare positioning for ligature:
+                                            # First component: NO NU
+          <anchor 325 1400> mark @TOP_MARKS # Anchors for first component
+
+          ligcomponent                      # Component separator
+
+                                            # Second component: TO TAO
+          <anchor 825 1450> mark @TOP_MARKS # Anchors for second component
+        ;
+    } mark;
+
+So we write `position ligature` and the name of the ligated glyph or glyph class, and then, for each component which made up the ligature substitution,
+we give one or more mark-to-base positioning rules; then we separate each component by the keyword `ligcomponent`.
+
+The result is a set of anchors that can be used to attach marks to the appropriate part of ligated glyphs:
+
+![](features/mark-to-lig.png)
 
 ### Mark-to-mark
 
-Mark to mark positioning allows marks to have other marks attached to them. In Arabic, an alif can have a hamza mark attached to it, and can in turn have a damma attached to the hamza. We position this by defining a mark class for the damma as normal:
+The third kind of mark positioning, mark-to-mark, does what its name implies - it allows marks to have other marks attached to them.
+
+In Arabic, an alif can have a hamza mark attached to it, and can in turn have a damma attached to the hamza. We position this by defining a mark class for the damma as normal:
 
     markClass damma <anchor 189 -103> @dammaMark;
 
@@ -434,3 +463,5 @@ Next we write a lookup which adjusts the advance width of each of the "narrow" i
 And here's the result of those two features - the contextual alternate, and the kerning feature - working together:
 
 ![](features/amiri-kern-2.png)
+
+That, thankfully, is probably as complicated as it's going to get.
