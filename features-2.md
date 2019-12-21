@@ -217,7 +217,7 @@ A simple example is found in the [Libertinus](https://github.com/alif-type/liber
 
 What this says is: when we see a capital followed by an accent, we're going to substitute the accent (it's the replacement sequence, so it gets an apostrophe). But *how* we do the substitution depends on another lookup we now reference: acute accents for capital acutes, grave accents for capital graves, and so on. The tilde accent does not have a capital form, so is not replaced.
 
-We can also use this trick to perform a *many to many* substitution, which OpenType does not directly support. Let's take another example from the Amiri font, which contains many calligraphic substitutions and special forms. At the end of a word, the sequence beh rah (بر) *and all similar forms based on the same shape* is replaced by another pair of glyphs with a better calligraphic cadence. How do we do this?
+We can also use this trick to perform a *many to many* substitution, which OpenType does not directly support. Let's take another example from the Amiri font, which contains many calligraphic substitutions and special forms. One of these substitutions is that the sequence beh rah (بر) *and all similar forms based on the same shape* is replaced by another pair of glyphs with a better calligraphic cadence. (Actually, this needs to be done in two cases: when the beh-rah is at the start of the word, and when it is at the end. But we're going to focus on the one where it is at the end.) How do we do this?
 
 First, we declare our feature and say that we're not interested in mark glyphs. Then, when we see a beh-like glyph (which includes not only beh, but yeh, noon, beh with three dots, and so on) in its medial form and a rah-like glyph (or jeh, or zain...) in its final form, then *both* of those glyphs will be subject to a secondary lookup.
 
@@ -253,7 +253,7 @@ If your font is not compiling because it's running out of space in the GSUB or G
 
 ### Reverse chained contextual substitution
 
-The final substitution type is extremely rare. I haven't found any recorded use of it outside of test fonts. It was designed for complex Arabic and Urdu calligraphic (nastaliq style) fonts where, although the input text is processed in right-to-left order, the calligraphic shape of the word is built up in left-to-right order: each glyph is determined by the glyph which *precedes* it in the input order but *follows* it in the writing order.
+The final substitution type is extremely rare. I haven't found any recorded use of it outside of test fonts. It was designed for nastaliq style Arabic fonts (often, but not exclusively, used in Urdu typesetting). In that style, even though the input text is processed in right-to-left order, the calligraphic shape of the word is built up in left-to-right order: the form of each glyph is determined by the glyph which *precedes* it in the input order but *follows* it in the writing order.
 
 So reverse chained contextual substitution is a substitution that is applied by the shaper *backwards in time*: it starts at the end of the input stream, and works backwards, and the reason this is so powerful is because it allows you to contextually condition the "current" lookup based on the results from "future" lookups.
 
