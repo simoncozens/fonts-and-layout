@@ -131,18 +131,73 @@ As it happens, if your font provides a "e" and a "acutecomb" glyph but *not* a p
 
 But having a precomposed glyph in the font will always work, both for composed Unicode characters like U+00E9 *and* for its decompositions, so that's why having the font contain all the glyphs you are likely to support is a better way to go.
 
-### Problems with "i"
+## The letter "i"
 
-The letter "i" turns out to be 
+The Latin letter "i" (and sometimes "j") turns out to need special handling. For one thing, in Turkish, as we've mentioned before, lower case "i" uppercases to "İ".
 
-Turkish i
-ccmp in Selawik
+Unicode knows this, so when people ask their word processors to turn their text into upper case, the word processor replaces the Latin letter "i" with the Turkish capital version, LATIN CAPITAL LETTER I WITH DOT ABOVE U+0130. Fine. Your font then gets the right character to render. However, what about the case (ha, ha) when you ask the word processor for small capitals? Small capitals are a typographic refinement, which changes the *presentation* of the characters, but not the characters themselves. Your font will still be asked to process a lower case Latin letter i, but to present it as a small caps version - which means you do not get the advantage of the application doing the Unicode case mapping for you. You have to do it yourself.
 
+> In fact, *any* time the font is asked to make presentational changes to glyphs, you need to implement any character-based special casing by hand. What we say here for small-caps Turkish i is also valid for German sharp-s and so on.
 
+Additionally, you may want to inhibit Turkish "i" from forming ligatures such as "fi" and "ffi", while allowing ligatures in other Latin-based languages.
 
-## Positioning
+We're going to look at *two* ways to achieve these things. I'm giving you two ways because I don't want you just to apply it as a recipe for this particular situation, but hopefully inspire you to think about how to use similar techniques to solve your own problems.
 
-XXX
+Here's the first way to do it, in which we'll deal with the problems one at a time. We make a special rule in the `smcp` feature for dealing with Turkish:
+
+    feature smcp {
+        sub i by i.sc; # Amongst everything else.
+        script latn;
+        language TRK;
+        sub i by i.sc.TRK;
+    }
+
+Oops, this doesn't work. Can you see why not? Remember that the language-specific part of a feature includes all the default rules. The shaper sees a "i" and the `smcp` feature, and runs through all the rules one at a time. The default rules are processed *first*, so that "i" gets substituted for "i.sc". Finally the shaper comes to the Turkish-specific rule, but by this point any "i" glyphs have already been turned into something else, so it does not match.
+
+How about this?
+
+    feature smcp {
+        sub i by i.sc; # Amongst everything else.
+        script latn;
+        language TRK;
+        sub i.sc by i.sc.TRK;
+    }
+
+Now the shaper gets two bites at the cherry: it first turns "i" into "i.sc", and then additionally in Turkish contexts the "i.sc" is turned into "i.sc.TRK". This works, but it's ugly.
+
+The ligature situation is taken care of using `exclude_dflt`:
+
+    feature liga {
+        sub f i by f_i;
+        script latn;
+        language TRK exclude_dft;
+    }
+
+Now there are no ligature rules for Turkish, because we have explicitly asked not to include the default rules.
+
+Here's another, and perhaps neater, way to achieve the same effect. In this method, we'll create a separate "Turkish i" glyph, "i.TRK", which is visually identical to the standard Latin "i". Now in the case of Turkish, we will substitute any Latin "i"s with our "i.TRK" in a `locl` feature:
+
+    feature locl {
+      script latn;
+      language TRK exclude_dflt;
+      sub i by i.TRK;
+    } locl;
+
+What does that achieve? Well, the problem with ligatures is taken care of straight away, without any additional code. We create our `liga` feature as normal:
+
+    feature liga {
+        sub f i by f_i;
+    }
+
+But we don't need to do anything specific for Turkish, because in the Turkish case, the shaper will see "f i.TRK" and the rule will not match. The small caps case is easier too:
+
+    feature smcp {
+        sub i by i.sc; # Amongst everything else.
+        sub i.TRK by i.sc.TRK;
+    }
+
+This has "cost" us an extra glyph in the font which is a duplicate of another glyph, but has made the feature coding much simpler. Both ways work - choose whichever best fits your mental model of how the process should operate.
+
 ## Arabic, Urdu and Sindhi
 
 Local forms. Calligraphic forms.
@@ -154,15 +209,32 @@ See e.g.
 
 https://github.com/itfoundry/hind/blob/master/family.fea
 
-## Other tables
-### Baselines
-### Vertical typesetting
-### Anchors
-### Mark-to-mark / mark-to-base
-### Entry / Exit
+## Baselines
+
+Recall - in the unlikely event that you have forgotten - that the OpenType model of layout relies on lining up boxes along a fixed baseline. But what if you have more than one script in the font? 
+
+## Vertical typesetting
+
 ## USE
 
 ## Resources
 
-http://theinsectsproject.eu
+To finish, here is a list of resources which may help you when designing and implementing for global scripts:
+
+* Latin diacritics design:
+  - [The Insects Project](http://theinsectsproject.eu) - a downloadable book on issues of Central European diacritic design
+  - [Problems of Diacritic Design for Latin script text faces](http://gaultney.org/jvgtype/wp-content/uploads/ProbsOfDiacDesignLowRes.pdf)
+  - [Polish diacritics how-to](http://www.twardoch.com/download/polishhowto/index.html) (Adam Twardoch)
+  - Filip Blažek's [Diacritics project](http://diacritics.typo.cz)
+  - [Context of Diacritics](http://www.urtd.net/x/cod/) analyses diacritics by frequency, combination and language
+* Danny Trương's [Vietnamese Typography](https://vietnamesetypography.com)
+* Guidance on specific characters:
+  - [thorn and eth](https://sites.google.com/view/briem/design) (Gunnlaugur Briem)
+  - [Tcomma and Tcedilla](https://typedrawers.com/discussion/318/tcomma-and-tcedilla)
+  - [German capital sharp s](https://typography.guru/journal/capital-sharp-s-designs/), and [OpenType feature code to support it](https://medium.com/@typefacts/the-german-capital-letter-eszett-e0936c1388f8)
+* Microsoft's script development specifications: [Latin, Cyrillic, Greek](https://docs.microsoft.com/en-gb/typography/script-development/standard); [Arabic](https://docs.microsoft.com/en-gb/typography/script-development/arabic); [Buginese](https://docs.microsoft.com/en-gb/typography/script-development/buginese); [Hangul](https://docs.microsoft.com/en-gb/typography/script-development/hangul); [Hebrew](https://docs.microsoft.com/en-gb/typography/script-development/hebrew); [Bengali](https://docs.microsoft.com/en-gb/typography/script-development/bengali); [Devanagari](https://docs.microsoft.com/en-gb/typography/script-development/devanagari); [Gujarati](https://docs.microsoft.com/en-gb/typography/script-development/gujarati); [Gurmukhi](https://docs.microsoft.com/en-gb/typography/script-development/gurmukhi); [Kannada](https://docs.microsoft.com/en-gb/typography/script-development/kannada); [Malayalam](https://docs.microsoft.com/en-gb/typography/script-development/malayalam); [Oriya](https://docs.microsoft.com/en-gb/typography/script-development/oriya); [Tamil](https://docs.microsoft.com/en-gb/typography/script-development/tamil); [Telugu](https://docs.microsoft.com/en-gb/typography/script-development/telugu); [Javanese](https://docs.microsoft.com/en-gb/typography/script-development/javanese); [Khmer](https://docs.microsoft.com/en-gb/typography/script-development/khmer); [Lao](https://docs.microsoft.com/en-gb/typography/script-development/lao); [Myanmar](https://docs.microsoft.com/en-gb/typography/script-development/myanmar); [Sinhala](https://docs.microsoft.com/en-gb/typography/script-development/sinhala); [Syriac](https://docs.microsoft.com/en-gb/typography/script-development/syriac); [Thaana](https://docs.microsoft.com/en-gb/typography/script-development/thaana); [Thai](https://docs.microsoft.com/en-gb/typography/script-development/thai); [Tibetan](https://docs.microsoft.com/en-gb/typography/script-development/tibetan)
+* Script databases:
+  - [Omniglot](https://www.omniglot.com) is an online encyclopedia of scripts and languages.
+  - [ScriptSource](https://scriptsource.org/cms/scripts/page.php) is similar, but includes an annotated version of the Unicode Character Database for each codepoint. See, for example, the page about [LATIN SMALL LETTER EZH](https://scriptsource.org/cms/scripts/page.php?item_id=character_detail_use&key=U000292).
+  - Eesti Keele Institute [letter database](http://www.eki.ee/letter/) tells you what glyphs you need to support particular languages.
 
