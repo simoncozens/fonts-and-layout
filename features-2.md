@@ -95,6 +95,25 @@ As you can see from the diagram above, the first consonant doesn't change; we ju
       ...
     }
 
+One thing that is *super important thing to know* at this stage is that OpenType shaping happens in *visual order*. That is to say, even in right-to-left scripts like Arabic, the glyphs will "come out" of the shaper in the order they will be drawn on the page, which is left to right. You can see this with hb-shape:
+
+    $ hb-shape LateefRegOT.ttf 'كتاب'
+    [uni0628=3+1220|uni0627.fina=2+467|uni062A.medi=1+440|uni0643.init=0+633]
+
+Notice how the initial form of kaf comes at the *end* and the final form of alif comes near the *beginning* of the output string?
+
+The reason why this is *super important to know* is that OpenType layout rules affecting more than one glyph *also* need to be written in visual order. If you want to turn final lam alif into a ligature, don't do this:
+
+    sub lam-ar.medi alif-ar.fina by lamalif-ar.fina;
+
+because it'll never match. (Well, if it does, something else has gone badly wrong...) Instead, think about the order that the glyphs will be drawn, and write:
+
+    sub alif-ar.fina lam-ar.medi by lamalif-ar.fina;
+
+This goes for all rules you write involving right-to-left scripts: get used to thinking about them "the other way around" as you write them from the shaper's perspective.
+
+In the next chapter, we'll explore in the next chapter why instead of ligatures for Arabic rules, you might want to use the following lookup type instead: contextual substitutions.
+
 ### Contextual Substitution
 
 The substitutions we've seen so far have applied globally - whenever the input glyph matches the rule, the substitution gets made. But what if we want to say that the rule should only apply in certain circumstances?

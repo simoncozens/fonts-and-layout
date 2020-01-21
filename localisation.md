@@ -135,7 +135,7 @@ But having a precomposed glyph in the font will always work, both for composed U
 
 The Latin letter "i" (and sometimes "j") turns out to need special handling. For one thing, in Turkish, as we've mentioned before, lower case "i" uppercases to "İ".
 
-Unicode knows this, so when people ask their word processors to turn their text into upper case, the word processor replaces the Latin letter "i" with the Turkish capital version, LATIN CAPITAL LETTER I WITH DOT ABOVE U+0130. Fine. Your font then gets the right character to render. However, what about the case (ha, ha) when you ask the word processor for small capitals? Small capitals are a typographic refinement, which changes the *presentation* of the characters, but not the characters themselves. Your font will still be asked to process a lower case Latin letter i, but to present it as a small caps version - which means you do not get the advantage of the application doing the Unicode case mapping for you. You have to do it yourself.
+Unicode knows this, so when people ask their word processors to turn their text into upper case, the word processor replaces the Latin letter "i" with the Turkish capital version, LATIN CAPITAL LETTER I WITH DOT ABOVE U+0130. Fine. Your font then gets the right character to render. However, what about the case (ha, ha) when you ask the word processor for small capitals? Small capitals are a typographic refinement, which changes the *presentation* of the characters, *but not the characters themselves*. Your font will still be asked to process a lower case Latin letter i, but to present it as a small caps version - which means you do not get the advantage of the application doing the Unicode case mapping for you. You have to do it yourself.
 
 > In fact, *any* time the font is asked to make presentational changes to glyphs, you need to implement any character-based special casing by hand. What we say here for small-caps Turkish i is also valid for German sharp-s and so on.
 
@@ -200,22 +200,102 @@ This has "cost" us an extra glyph in the font which is a duplicate of another gl
 
 ## Arabic, Urdu and Sindhi
 
-Local forms. Calligraphic forms.
+In the various languages which make use of the Arabic script, there are sometimes locally expected variations of the glyph set - for instance, we mentioned the variant numbers four, five and seven in Urdu. The expected form of the letter heh differs in Urdu, Sindhi, Pakari and Kurdish. In Persian, a language-specific form of kaf (ک, U+06A9 ARABIC LETTER KEHEH) is preferred over the usual form of kaf (ك, U+0643 ARABIC LETTER KAF); however, Persian documents may encode kaf with using U+0643, so fonts supporting Persian should substitute kaf with the "keheh" form. All of these substitutions can be made using the language-sepcific `locl` feature trick we saw above.
 
-## (Lots of Devanagari etc. needs to go here)
+> "How do I know all this stuff?" Well, part of good type design is doing your research: looking into exemplars and documents showing local expectations, testing your designs with native readers, and so on. But there's also a growing number of people collating and documenting this kind of language-specific information. As we've mentioned, the Unicode Standard, and the original script encoding proposals for Unicode, give some background information on how the script works. I've also added a list of resources to the end of this chapter which collects some of the best sources for type design information.
+
+Arabic additionally has a number of design styles representing its calligraphic origins. These different styles require a greater or lesser degree of calligraphic complexity, nastaleeq being the most complex. The font designer's challenge is to provide an adequate number of contextual substitutions to create a natural and pleasing effect. As you consider the appropriate ways of writing different pairs of letters together, the more ligature forms you envision for your font, the more complex you can expect the feature processing to be.
+
+One important trick in Arabic feature programming is to make heavy use of chaining contextual substitutions instead of ligatures. Let's consider the word كِلَا (kilā, "both"). A simple rendering of this word, without any calligraphic substitutions, might look like this: (Glyphs from Khaled Hosny's *Amiri*.)
+
+![](localisation/kila-1.png)
+
+Running `hb-shape --features='-calt' Amiri-Regular.ttf كِلَا` confirms that no contextual shaping beyond the conversion into initial, medial and final forms is going on:
+
+    [uni0627.fina=4+229|uni064E=2@-208,0+0|uni0644.medi=2+197|uni0650=0@8,0+0|uni0643.init=0+659]
+
+Obviously this is unaccepable. There are two ways we can improve this rendering. The first is the obvious substitution of the final lam-alif with the lam-alif ligature, like so:
+
+![](localisation/kila-2.png)
+
+But the second, looking at the start of the word, is to form a kaf-lam ligature:
+
+![](localisation/kila-3.png)
+
+Ah, but... what if we want to do both? If we use ligature substitutions like so:
+
+    feature calt {
+        lookupflag IgnoreMarks;
+        sub lam-ar.medi kaf-ar.init by kaf-lam.init; # Rule 1
+        sub alef-ar.fina lam-ar.medi by lam-alef.fina; # Rule 2
+    } calt;
+
+what is going to happen? The shaper will work through the string in visual order (as we mentioned in the previous chapter), seeing the glyphs `alef-ar.fina lam-ar.medi kaf-ar.init`. It sees the first pair of glyphs, and applies Rule 2 above, meaning that the new string is `lam-alef.fina kaf-ar.init`. It tries to match any rule against this new string, but nothing matches.
+
+Let's now rewrite this feature using chained contextual substitutions and glyph classes. Instead of creating a lam-alef ligature and a kaf-lam ligature, we split each ligature into two "marked" glyphs. Let's first do this for the lam-alef ligature. We design two glyphs, `alef-ar.fina.aleflam` and `lam-ar.medi.aleflam`, which look like this:
+
+![](localisation/alef-lam.png)
+
+and then we substitute each glyph by its related "half-ligature":
+
+    lookup AlefLam {
+        sub alef-ar.fina by alef-ar.fina.aleflam;
+        sub lam-ar.medi by lam-ar.medi.aleflam;
+    } AlefLam;
+
+    feature calt {
+        lookupflag IgnoreMarks;
+        sub alef-ar.fina' lookup AlefLam lam-ar.medi' lookup AlefLam;
+    }
+
+Now we declare that `lam-ar.medi.aleflam` is a variant form of medial lam, using a glyph class:
+
+    @lam.medi = [ lam-ar.medi lam-ar.medi.aleflam ... ];
+
+Finally, we create our variant kaf, which we call `kaf-ar.init.lamkaf`, and now we can apply the kaf-lam substitution to anything "lam-like":
+
+    feature calt {
+        lookupflag IgnoreMarks;
+        sub alef-ar.fina' lookup AlefLam lam-ar.medi' lookup AlefLam; # Rule 1
+        sub @lam.medi kaf-ar.init' by kaf-ar.init.lamkaf; # Rule 2
+    }
+
+Now when the shaper sees alef lam kaf, what happens? Alef and lam match rule 1, which chains into the "AlefLam" lookup; this converts the first glyph to `alef-ar.fina.aleflam` and the second to `lam-ar.medi.aleflam`. Now our string is `alef-ar.fina.aleflam lam-ar.medi.aleflam kaf-ar.init`. At which point, because `lam-ar.medi.aleflam` is part of the `@lam.medi` glyph class, rule 2 *also* matches, meaning that `kaf-ar.init` gets substituted for `kaf-ar.init.lamkaf`.
+
+It's a little more convoluted, but this way we have a substitution arrangement that works not just by ligating a pair at a time, but which allows us to *continue* transforming glyphs across the string: alef-lam works, as does lam-kaf, but they also both work together.
+
+## Devanagari
+
+Cluster reordering
 
 Reph forms.
 See e.g.
 
 https://github.com/itfoundry/hind/blob/master/family.fea
 
-## Baselines
+## USE
 
-Recall - in the unlikely event that you have forgotten - that the OpenType model of layout relies on lining up boxes along a fixed baseline. But what if you have more than one script in the font? 
+Do you remember how the script tag for Devanagari is "dev2" because Microsoft wrote two versions of its Indic shaper and the second one works better? This shows us that there is an awful lot of specialist knowledge that goes on inside the shaping engine. Shaping engines like Harfbuzz and Uniscribe have code which handles syllable reordering in Indic scripts (as well as Myanmar, jamo composition in Hangul, presentation forms in Hebrew, adjustment of tone mark placement in Thai, and so on.
+
+What this means is that when a new script is encoded and fonts are created for it, we need to wait until any script-specific handling needed is added to the shaping engines. Even when the code is added to the shaper, fonts won't be properly supported in older software, and in the case of commercial shaping engines, it may not actually make economic sense for the developer to spend time writing specific shaping code for minority scripts.
+
+After overseeing the development of far more script-specific shapers than one person really should, Andrew Glass of Microsoft wondered whether it would be possible to develop one shaping engine for all of Unicode. A similar endeavour by SIL called Graphite attempts to acts as a universal shaping engine by moving the script-specific logic from the shaper into the font: Graphite "smart fonts" contain a bytecode program which is executed by the shaper in place of the shaper's script-specific knowledge. In Glass' idea of the Universal Shaping Engine, however, the intelligence is neither in the font nor in the shaping engine, but provided by the Unicode Character Database.
+
+Each character that enters the Universal Shaping Engine is looked up in the Unicode Character Database. Based on its Indic Syllabic Category, General Category, and Indic Positional Category entries, is placed into one of twenty-four character classes, further divided into 26 sub-classes. The input characters are then formed into clusters based on these character classes, and features are applied to each cluster in turn.
+
+One problem that the USE attempts to solve is that the order that characters are encoded in Unicode is not the same as the order in which their respective glyphs are meant to be displayed. A USE shaper looks at the character classes of the incoming input and forms them into a cluster by matching the following characteristics:
+
+![](localisation/USE-Cluster.png)
+
+But the USE expects those characters to be formed into a glyph which looks like this:
+
+![](localisation/use-form.png)
+
+For instance, in the Telugu consonant cluster ఫ్ట్వేర్, 
 
 ## Vertical typesetting
 
-## USE
+vhea, vmtx, VORG
 
 ## Resources
 
@@ -233,6 +313,9 @@ To finish, here is a list of resources which may help you when designing and imp
   - [Tcomma and Tcedilla](https://typedrawers.com/discussion/318/tcomma-and-tcedilla)
   - [German capital sharp s](https://typography.guru/journal/capital-sharp-s-designs/), and [OpenType feature code to support it](https://medium.com/@typefacts/the-german-capital-letter-eszett-e0936c1388f8)
 * Microsoft's script development specifications: [Latin, Cyrillic, Greek](https://docs.microsoft.com/en-gb/typography/script-development/standard); [Arabic](https://docs.microsoft.com/en-gb/typography/script-development/arabic); [Buginese](https://docs.microsoft.com/en-gb/typography/script-development/buginese); [Hangul](https://docs.microsoft.com/en-gb/typography/script-development/hangul); [Hebrew](https://docs.microsoft.com/en-gb/typography/script-development/hebrew); [Bengali](https://docs.microsoft.com/en-gb/typography/script-development/bengali); [Devanagari](https://docs.microsoft.com/en-gb/typography/script-development/devanagari); [Gujarati](https://docs.microsoft.com/en-gb/typography/script-development/gujarati); [Gurmukhi](https://docs.microsoft.com/en-gb/typography/script-development/gurmukhi); [Kannada](https://docs.microsoft.com/en-gb/typography/script-development/kannada); [Malayalam](https://docs.microsoft.com/en-gb/typography/script-development/malayalam); [Oriya](https://docs.microsoft.com/en-gb/typography/script-development/oriya); [Tamil](https://docs.microsoft.com/en-gb/typography/script-development/tamil); [Telugu](https://docs.microsoft.com/en-gb/typography/script-development/telugu); [Javanese](https://docs.microsoft.com/en-gb/typography/script-development/javanese); [Khmer](https://docs.microsoft.com/en-gb/typography/script-development/khmer); [Lao](https://docs.microsoft.com/en-gb/typography/script-development/lao); [Myanmar](https://docs.microsoft.com/en-gb/typography/script-development/myanmar); [Sinhala](https://docs.microsoft.com/en-gb/typography/script-development/sinhala); [Syriac](https://docs.microsoft.com/en-gb/typography/script-development/syriac); [Thaana](https://docs.microsoft.com/en-gb/typography/script-development/thaana); [Thai](https://docs.microsoft.com/en-gb/typography/script-development/thai); [Tibetan](https://docs.microsoft.com/en-gb/typography/script-development/tibetan)
+* Arabic resources:
+  - Jonathan Kew's [Notes on some Unicode Arabic characters: recommendations for usage](https://scripts.sil.org/cms/scripts/render_download.php?format=file&media_id=arabicletterusagenotes&filename=ArabicLetterUsageNotes.pdf)
+  - [Character Requirements for a Nastaliq font](https://scriptsource.org/cms/scripts/page.php?item_id=entry_detail&uid=q5mbdr6h3b)
 * Script databases:
   - [Omniglot](https://www.omniglot.com) is an online encyclopedia of scripts and languages.
   - [ScriptSource](https://scriptsource.org/cms/scripts/page.php) is similar, but includes an annotated version of the Unicode Character Database for each codepoint. See, for example, the page about [LATIN SMALL LETTER EZH](https://scriptsource.org/cms/scripts/page.php?item_id=character_detail_use&key=U000292).
