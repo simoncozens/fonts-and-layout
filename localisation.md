@@ -273,11 +273,11 @@ See e.g.
 
 https://github.com/itfoundry/hind/blob/master/family.fea
 
-## USE
+## The Universal Shaping Engine
 
-Do you remember how the script tag for Devanagari is "dev2" because Microsoft wrote two versions of its Indic shaper and the second one works better? This shows us that there is an awful lot of specialist knowledge that goes on inside the shaping engine. Shaping engines like Harfbuzz and Uniscribe have code which handles syllable reordering in Indic scripts (as well as Myanmar, jamo composition in Hangul, presentation forms in Hebrew, adjustment of tone mark placement in Thai, and so on.
+Do you remember how the script tag for Devanagari is now `dev2` because Microsoft wrote two versions of its Indic shaper and the second one works better? This shows us that there is an awful lot of specialist knowledge that goes on inside the shaping engine. Shaping engines like Harfbuzz and Uniscribe contain code which handle various special cases required by different script systems - syllable reordering in Indic scripts, *jamo* composition in Hangul, presentation forms in Hebrew, adjustment of tone mark placement in Thai, and so on.
 
-What this means is that when a new script is encoded and fonts are created for it, we need to wait until any script-specific handling needed is added to the shaping engines. Even when the code is added to the shaper, fonts won't be properly supported in older software, and in the case of commercial shaping engines, it may not actually make economic sense for the developer to spend time writing specific shaping code for minority scripts.
+Of course, there's a problem with this. If the shaper contains all the knowledge about how to organise a script, that means that when a new script is encoded and fonts are created for it, we need to wait until the shaping engines are updated with new handling code to deal with the new script. Even when the code *is* added to the shaper, fonts won't be properly supported in older versions of the software, and in the case of commercial shaping engines, it may not actually make economic sense for the developer to spend time writing specific shaping code for minority scripts anyway.
 
 After overseeing the development of far more script-specific shapers than one person really should, Andrew Glass of Microsoft wondered whether it would be possible to develop one shaping engine for all of Unicode. A similar endeavour by SIL called Graphite attempts to acts as a universal shaping engine by moving the script-specific logic from the shaper into the font: Graphite "smart fonts" contain a bytecode program which is executed by the shaper in place of the shaper's script-specific knowledge. In Glass' idea of the Universal Shaping Engine, however, the intelligence is neither in the font nor in the shaping engine, but provided by the Unicode Character Database.
 
@@ -287,11 +287,42 @@ One problem that the USE attempts to solve is that the order that characters are
 
 ![](localisation/USE-Cluster.png)
 
+> If you want a more formal grammar for a USE cluster, you can find one in the Microsoft [script development specs](https://docs.microsoft.com/en-us/typography/script-development/use).
+
 But the USE expects those characters to be formed into a glyph which looks like this:
 
 ![](localisation/use-form.png)
 
-For instance, in the Telugu consonant cluster ఫ్ట్వేర్, 
+For instance, in Telugu, we know that the series of characters ఫ్ ట్ వే should be formed into a single cluster (ఫ్ట్వే), because it is made up of a base character ఫ, followed by two halant groups (virama, base consonant), and a final top-positioned vowel. The script development spec mentioned above explained how these categories are derived from the Indic Positional Category and Indic Syllabic Category information in the Unicode Character Database.
+
+This "computational" model of a cluster does not know anything about the linguistic rules used in real-life scripts; you can create valid USE clusters which would be shaped "correctly" according to the script grammar defined in the specification, even though they have no relationship with anything in the actual language. For example, we can imagine a Balinese sequence made up of the following characters:
+
+* ᬳ BALINESE LETTER HA, Base
+* ᬴ BALINESE SIGN REREKAN, Consonant modifier above
+* Halant group:
+    * ᭄ BALINESE ADEG ADEG, Halant
+    * ᬗ BALINESE LETTER NGA, Base
+    * ᬴ BALINESE SIGN REREKAN, Consonant modifier above
+* Halant group:
+    * ᭄ BALINESE ADEG ADEG, Halant
+    * ᬢ BALINESE LETTER TA, Base
+* Vowels:
+    * ᬶ BALINESE VOWEL SIGN ULU, Vowel above
+    * ᬹ BALINESE VOWEL SIGN SUKU ILUT, Vowel below
+    * ᬸ BALINESE VOWEL SIGN SUKU, Vowel below
+    * ᬵ BALINESE VOWEL SIGN TEDUNG, Vowel post
+* Vowel modifiers:
+    * ᬀ BALINESE SIGN ULU RICEM, Vowel modifier above
+    * ᬁ BALINESE SIGN ULU CANDRA, Vowel modifier above
+    * ᬄ BALINESE SIGN BISAH, Vowel modifier post
+* Final consonants:
+    * ᬃ BALINESE SIGN SURANG, Consonant final above
+
+It's complete gobbledegook, obviously, but nevertheless it forms a single valid graphemic cluster according to the Universal Shaping Engine, and Harfbuzz (which implements the USE) bravely attempts to shape it:
+
+![](localisation/balinese-use.png)
+
+When USE has identified a cluster according to the rules above, it sends it to the shaper cluster-by-cluster for shaping and positioning.
 
 ## Vertical typesetting
 
