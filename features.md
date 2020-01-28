@@ -158,12 +158,16 @@ Now, we've added a rule, and Glyphs has compiled it into our font. How do we kno
 
 Now is a good time to introduce the `hb-shape` tool; it's a very handy utility for debugging and testing the application of OpenType features - how they affect the glyph stream, their effect on positioning, how they apply in different language and script combinations, and how they interact with each other. Learning to use `hb-shape`, which comes as part of the [HarfBuzz](http://harfbuzz.org) OpenType shaping engine, will help you with a host of OpenType-related problems.
 
+> If you're on Mac OS X, you can install the Harfbuzz utilities using homebrew, by calling `brew install harfbuzz` on the terminal.
+
 As we've mentioned, HarfBuzz is a shaping engine, typically used by layout applications. Shaping, as we know, is the process of taking a text, a font, and some parameters and producing a set of glyphs and their positions. `hb-shape` is a diagnostic tool which runs the shaping process for us and formats the output of the process in a number of different ways. We can use it to check the kern that we added in the previous section:
 
     $ hb-shape TTXTest-Regular.otf 'AA'
     [A=0+580|A=1+580]
 
-This tells us that when we have two "A" glyphs together, there is a 580 unit advance between the first and the second. But...
+This tells us that we have two "A" glyphs together. The first one is the first character in the input stream ("=0" - computer strings count from zero), and that it has a horizontal advance of 580 units ("+580"). The second one is the second character in the input stream ("=1") and also has an advance of 580 units.
+
+But...
 
     $ hb-shape TTXTest-Regular.otf 'AB'
     [A=0+530|B=1+618]
@@ -176,6 +180,8 @@ We didn't need to tell HarfBuzz to do any kerning - the `kern` feature is on by 
     [A=0+580|B=1+618]
 
 As you see in this case, the advance width of the "A" is back to 580 units, because the `ab` kern pair is not being applied in this case.
+
+> We will see more of `hb-shape` in the next chapter, including examples of how it shows us positioning information.
 
 ### Glyph classes
 

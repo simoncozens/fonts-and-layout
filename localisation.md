@@ -322,7 +322,23 @@ It's complete gobbledegook, obviously, but nevertheless it forms a single valid 
 
 ![](localisation/balinese-use.png)
 
-When USE has identified a cluster according to the rules above, it sends it to the shaper cluster-by-cluster for shaping and positioning.
+When USE has identified a cluster according to the rules above, the first set of features are applied - `locl`, `ccmp`, `nukt` and `akhn` in that order; next, the second set of features - `rphf` and `pref` in that order; then the third set of features - `rkrf`, `abvf`, `blwf`, `half`, `pstf`, `vatu` and `cjct` (not *necessarily* in that order).
+
+After these three feature groups are applied, the glyphs are *reordered* so that instead of their logical order (the order that Unicode requires them to be entered in a text) they now represent their visual order (reading from left to right). Rephs are keyed into a text *before* the base character, but are logically *after* it in the glyph stream. So in the Śāradā script used in Kashmir, we can enter 𑇂 (U+111C2 SHARADA SIGN JIHVAMULIYA) 𑆯 (U+111AF SHARADA LETTER SHA), and this is reordered by the shaping engine like so:
+
+        $ hb-shape NotoSansSharada-Regular.ttf '𑇂𑆯'
+        [Sha=0+700|Jihvamuliya.ns=0@-680,0+0]
+
+Notice how the Jihvamuliya (reph) has been placed after the base glyph in the glyph stream (even though it's then positioned on top).
+
+Similarly, glyphs representing pre-base characters (specifically pre-base vowels and pre-base vowel modifiers - and glyphs which have been identified with the `pref` feature) are moved to the beginning of the cluster but after the nearest virama to the left. Here we have a base (U+111A8 BHA), a halant (U+111C0 VIRAMA), another base (U+11193 GA), and a pre-base vowel (U+111B4 VOWEL SIGN I).
+
+        $ hb-shape NotoSansSharada-Regular.ttf '𑆨𑇀𑆓𑆴'
+        [Bha=0+631|virama=0+250|I=2+224|Ga=2+585]
+
+![](localisation/use-sharada.png)
+
+The i-matra has been correctly moved to before the base GA, even though it appeared after it in the input stream.
 
 ## Vertical typesetting
 

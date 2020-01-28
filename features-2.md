@@ -95,7 +95,7 @@ As you can see from the diagram above, the first consonant doesn't change; we ju
       ...
     }
 
-One thing that is *super important thing to know* at this stage is that OpenType shaping happens in *visual order*. That is to say, even in right-to-left scripts like Arabic, the glyphs will "come out" of the shaper in the order they will be drawn on the page, which is left to right. You can see this with hb-shape:
+One thing that is *super important thing to know* at this stage is that OpenType shaping happens in *visual order*. That is to say, even in right-to-left scripts like Arabic, the glyphs will "come out" of the shaper in the order they will be drawn on the page, which is left to right. You can see this with `hb-shape`:
 
     $ hb-shape LateefRegOT.ttf 'كتاب'
     [uni0628=3+1220|uni0627.fina=2+467|uni062A.medi=1+440|uni0643.init=0+633]
@@ -487,3 +487,41 @@ And here's the result of those two features - the contextual alternate, and the 
 ![](features/amiri-kern-2.png)
 
 That, thankfully, is probably as complicated as it's going to get.
+
+## Using hb-shape to check positioning rules
+
+In the previous chapter we introduced the Harfbuzz utility `hb-shape`, which is used for debugging the application of OpenType rules in the shaper. As well as looking at the glyphs in the output stream and seeing their advance widths, `hb-shape` also helps us to know how these glyphs have been repositioned in the Y dimension too.
+
+For example, suppose we are using a mark-to-base feature to position a virama on the Devanagari letter CHA:
+
+    markClass @mGC_blwm.virama_n172_0 <anchor -172 0> @MC_blwm.virama;
+    pos base dvCHA <anchor 276 57> mark @MC_blwm.virama;
+
+What this says is "the attachment point for the virama is at coordinate (-172,0); on the letter CHA, we should arrange things so that attachment point falls at coordinate (276,57)." Where does the virama end up? `hb-shape` can tell us:
+
+    $ hb-shape  build/Hind-Regular.otf 'छ्'
+    [dvCHA=0+631|dvVirama=0@-183,57+0]
+
+So we have a CHA character which is 631 units wide. Next we have a virama which is zero units wide! But when it is drawn, its position is moved - that's what the "@-183,57" component means: we've finished drawing the CHA, and then we move the "pen" negative 183 units in the X direction (183 units to the left) and up 57 units before drawing the virama.
+
+Why is it 183 units? First, let's see what would happen *without* the mark-to-base positioning. We can do this by asking `hb-shape` to turn off the `blwm` feature when processing:
+
+    $ hb-shape --features='-blwm' Hind-Regular.otf 'छ्'
+    [dvCHA=0+631|dvVirama=0+0]
+
+As you can see, no special positioning has been done. Another utility, `hb-view` can render the glyphs with the feature set we ask for. If we ask to turn off the `blwm` feature and see what the result is like, this is what we get:
+
+    $ hb-view --features='-blwm' Hind-Regular.otf 'छ्' -O png > test.png
+
+![](features/hind-bad-virama.png)
+
+> You can also make `hb-view` output PNG files, PDFs, and other file formats, which is useful for higher resolution testing. (Look at `hb-view --help-output` for more options.) But the old-school ANSI block graphics is quite cute, and shows what we need in this case.
+
+Obviously, this is badly positioned (that's why we have the `blwm` feature). What needs to happen to make it right?
+
+![](features/virama-pos.png)
+
+As you can see, the glyph is 631 units wide (Harfbuzz told us that), so we need to go back 355 units to get to the CHA's anchor position. The virama's anchor is 172 units to the left of that, so in total we end up going back 183 units. We also raise the glyph up 57 units from its default position.
+
+This example was one which we could probably have tested and debugged from inside our font editor. But as our features become more complex, `hb-shape` and `hb-view` become more and more useful for understanding what the shaper is doing with our font files.
+
