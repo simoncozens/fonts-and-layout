@@ -331,7 +331,7 @@ After these three feature groups are applied, the glyphs are *reordered* so that
 
 Notice how the Jihvamuliya (reph) has been placed after the base glyph in the glyph stream (even though it's then positioned on top).
 
-Similarly, glyphs representing pre-base characters (specifically pre-base vowels and pre-base vowel modifiers - and glyphs which have been identified with the `pref` feature) are moved to the beginning of the cluster but after the nearest virama to the left. Here we have a base (U+111A8 BHA), a halant (U+111C0 VIRAMA), another base (U+11193 GA), and a pre-base vowel (U+111B4 VOWEL SIGN I).
+Similarly, glyphs representing pre-base characters (specifically pre-base vowels and pre-base vowel modifiers - and glyphs which have been identified with the `pref` feature, which we'll talk about in a minute) are moved to the beginning of the cluster but after the nearest virama to the left. Here we have a base (U+111A8 BHA), a halant (U+111C0 VIRAMA), another base (U+11193 GA), and a pre-base vowel (U+111B4 VOWEL SIGN I).
 
         $ hb-shape NotoSansSharada-Regular.ttf '𑆨𑇀𑆓𑆴'
         [Bha=0+631|virama=0+250|I=2+224|Ga=2+585]
@@ -339,6 +339,31 @@ Similarly, glyphs representing pre-base characters (specifically pre-base vowels
 ![](localisation/use-sharada.png)
 
 The i-matra has been correctly moved to before the base GA, even though it appeared after it in the input stream.
+
+Pre-base *consonants*, however, are *not* reordered. If you want to put these consonants before the base in the glyph stream, you can do so by mentioning the relevant glyph in a substitution rule in the `pref` feature. For example, to move a Javanese medial ra (U+A9BF) to before the base, you create a rule like so:
+
+        feature pref {
+            script java;
+            sub j_Jya j_RaMed' by j_RaMed.pre;
+        } pref;
+
+The `j_RaMed.pre` glyph will be moved before the `j_Jya` by the shaper. When I say the glyph should be "mentioned" in a substitution rule, I do mean "mentioned"; you can, if needed, substitute a glyph *with itself*, just to tell the shaper that you would like it moved before the base. This code reorders a Tai Tham medial ra, by ensuring that the `pref` feature has "touched" it:
+
+        feature pref {
+            script lana;
+            sub uni1A55 by uni1A55;
+        } pref;
+
+> In days before the Universal Shaping Engine, fonts had to cheat, by swapping the characters around using positioning rules instead. Here in Noto Sans Tai Tham, the base (TAI THAM LETTER WA) is shifted forward 540 units, while the prebase medial ra is shifted backwards 1140 units, effectively repositioning it while keeping the characters in the same order in the glyph stream:
+
+        $ hb-shape NotoSansTaiTham-Regular.ttf 'ᩅᩕ'
+        [uni1A45=0@540,0+1103|uni1A55=0@-1140,0+100]
+
+Next, after re-ordering, positional features (`isol`, `init`, `medi`, `fina`) are applied to each cluster, and finally the usual run of substitution and positioning features are applied as normal. (See the [USE script development spec](https://docs.microsoft.com/en-us/typography/script-development/use#opentype-feature-application-ii) for the full list.)
+
+The Universal Shaping Engine is a tremendous boost for those creating fonts for minority scripts; it allows font development to press ahead without having to wait for shaping engines to encode script-specific logic. However, the shaping engine still needs to hand off control of a specific script to the USE for processing, rather than handling it as a normal (non-complex) script. This means there *is* still a list of scripts within the shaping engine, and only scripts on the list get handed to the USE. Rather than having to write a new shaper for each script, shaping engine maintainers now only have to add a line of code to the list of USE-supported scripts - but they still have to add that line of code. Supporting new scripts is easier, but not automatic. (I hope that one day, USE will become the default for new scripts, rather than the exception, but we are not there yet.)
+
+Additionally, the USE's maximal cluster model (which allows us to produce crazy clusters such as the Balinese example above) *more or less* fits all scripts, although John Hudson has found an exception in the case of Tai Tham. In his words, "the Universal Shaping Engine turns out to be not quite universal in this sense either. But it’s pretty darn close, and is a remarkable achievement." It most certainly is.
 
 ## Vertical typesetting
 
