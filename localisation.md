@@ -206,7 +206,7 @@ In the various languages which make use of the Arabic script, there are sometime
 
 > One of those resources is Jonathan Kew's notes on variant Arabic characters in different scripts. He mentions there that some Persian documents may encode kaf with using U+0643, so fonts supporting Persian *may* wish to substitute kaf with the "keheh" form; other documents, however, might use U+06A9 to represent Persian kaf but retain the use of U+0643 to deliberately refer to the standard Arabic kaf - in which case you may *not* want to make that glyph substitution. Think about your intended audience when substituting encoded characters.
 
-Arabic additionally has a number of design styles representing its calligraphic origins. These different styles require a greater or lesser degree of calligraphic complexity, nastaleeq being the most complex. The font designer's challenge is to provide an adequate number of contextual substitutions to create a natural and pleasing effect. As you consider the appropriate ways of writing different pairs of letters together, the more ligature forms you envision for your font, the more complex you can expect the feature processing to be.
+Arabic fonts additionally vary depending on their adherence to calligraphic tradition. When connecting letters together into word forms, calligraphers will use a wide variety of ligatures, substitutions, and adjustments to positioning to create a natural and pleasing effect, and Arabic fonts will reflect this "fluidity" to a greater of lesser degree. As you consider the appropriate ways of writing different pairs of letters together, the more ligature forms you envision for your font, the more complex you can expect the feature processing to be.
 
 One important trick in Arabic feature programming is to make heavy use of chaining contextual substitutions instead of ligatures. Let's consider the word كِلَا (kilā, "both"). A simple rendering of this word, without any calligraphic substitutions, might look like this: (Glyphs from Khaled Hosny's *Amiri*.)
 
@@ -216,7 +216,7 @@ Running `hb-shape --features='-calt' Amiri-Regular.ttf كِلَا` confirms that
 
     [uni0627.fina=4+229|uni064E=2@-208,0+0|uni0644.medi=2+197|uni0650=0@8,0+0|uni0643.init=0+659]
 
-Obviously this is unaccepable. There are two ways we can improve this rendering. The first is the obvious substitution of the final lam-alif with the lam-alif ligature, like so:
+Obviously this is unacceptable. There are two ways we can improve this rendering. The first is the obvious substitution of the final lam-alif with the lam-alif ligature, like so:
 
 ![](localisation/kila-2.png)
 
