@@ -240,14 +240,14 @@ Let's now rewrite this feature using chained contextual substitutions and glyph 
 
 and then we substitute each glyph by its related "half-ligature":
 
-    lookup AlefLam {
+    lookup LamAlef {
         sub lam-ar.medi by lam-ar.medi.aleflam;
         sub alef-ar.fina by alef-ar.fina.aleflam;
-    } AlefLam;
+    } LamAlef;
 
     feature calt {
         lookupflag IgnoreMarks;
-        sub lam-ar.medi' lookup AlefLam  alef-ar.fina' lookup AlefLam;
+        sub lam-ar.medi' lookup LamAlef  alef-ar.fina' lookup LamAlef;
     }
 
 Finally, we create our variant kaf, which we call `kaf-ar.init.lamkaf`, and now we can apply the kaf-lam substitution:
@@ -255,10 +255,10 @@ Finally, we create our variant kaf, which we call `kaf-ar.init.lamkaf`, and now 
     feature calt {
         lookupflag IgnoreMarks;
         sub kaf-ar.init' lam.medi by kaf-ar.init.lamkaf; # Rule 1
-        sub lam-ar.medi' lookup AlefLam alef-ar.fina' lookup AlefLam; # Rule 2
+        sub lam-ar.medi' lookup LamAlef alef-ar.fina' lookup LamAlef; # Rule 2
     }
 
-Now when the shaper sees kaf lam alef, what happens? Kaf and lam match rule 1, which substitutes the kaf for its special initial form. Next, lam alef matches rule 2, which chains into the "AlefLam" lookup; this converts the first glyph to  `lam-ar.medi.aleflam` and the second to `alef-ar.fina.aleflam`.
+Now when the shaper sees kaf lam alef, what happens? Kaf and lam match rule 1, which substitutes the kaf for its special initial form. Next, lam alef matches rule 2, which chains into the "LamAlef" lookup; this converts the first glyph to  `lam-ar.medi.aleflam` and the second to `alef-ar.fina.aleflam`.
 
 It's a little more convoluted, but this way we have a substitution arrangement that works not just by ligating a pair at a time, but which allows us to *continue* transforming glyphs across the string: alef-lam works, as does lam-kaf, but they also both work together.
 
