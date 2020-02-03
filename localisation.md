@@ -200,9 +200,11 @@ This has "cost" us an extra glyph in the font which is a duplicate of another gl
 
 ## Arabic, Urdu and Sindhi
 
-In the various languages which make use of the Arabic script, there are sometimes locally expected variations of the glyph set - for instance, we mentioned the variant numbers four, five and seven in Urdu. The expected form of the letter heh differs in Urdu, Sindhi, Pakari and Kurdish. In Persian, a language-specific form of kaf (ک, U+06A9 ARABIC LETTER KEHEH) is preferred over the usual form of kaf (ك, U+0643 ARABIC LETTER KAF); however, Persian documents may encode kaf with using U+0643, so fonts supporting Persian should substitute kaf with the "keheh" form. All of these substitutions can be made using the language-sepcific `locl` feature trick we saw above.
+In the various languages which make use of the Arabic script, there are sometimes locally expected variations of the glyph set - for instance, we mentioned the variant numbers four, five and seven in Urdu. The expected form of the letter heh differs in Urdu, Sindhi, Pakari and Kurdish. In Persian, a language-specific form of kaf (ک, U+06A9 ARABIC LETTER KEHEH) is preferred over the usual form of kaf (ك, U+0643 ARABIC LETTER KAF). All of these substitutions can be made using the language-specific `locl` feature trick we saw above.
 
 > "How do I know all this stuff?" Well, part of good type design is doing your research: looking into exemplars and documents showing local expectations, testing your designs with native readers, and so on. But there's also a growing number of people collating and documenting this kind of language-specific information. As we've mentioned, the Unicode Standard, and the original script encoding proposals for Unicode, give some background information on how the script works. I've also added a list of resources to the end of this chapter which collects some of the best sources for type design information.
+
+> One of those resources is Jonathan Kew's notes on variant Arabic characters in different scripts. He mentions there that some Persian documents may encode kaf with using U+0643, so fonts supporting Persian *may* wish to substitute kaf with the "keheh" form; other documents, however, might use U+06A9 to represent Persian kaf but retain the use of U+0643 to deliberately refer to the standard Arabic kaf - in which case you may *not* want to make that glyph substitution. Think about your intended audience when substituting encoded characters.
 
 Arabic additionally has a number of design styles representing its calligraphic origins. These different styles require a greater or lesser degree of calligraphic complexity, nastaleeq being the most complex. The font designer's challenge is to provide an adequate number of contextual substitutions to create a natural and pleasing effect. As you consider the appropriate ways of writing different pairs of letters together, the more ligature forms you envision for your font, the more complex you can expect the feature processing to be.
 
@@ -226,11 +228,11 @@ Ah, but... what if we want to do both? If we use ligature substitutions like so:
 
     feature calt {
         lookupflag IgnoreMarks;
-        sub lam-ar.medi kaf-ar.init by kaf-lam.init; # Rule 1
-        sub alef-ar.fina lam-ar.medi by lam-alef.fina; # Rule 2
+        sub kaf-ar.init lam-ar.medi by kaf-lam.init; # Rule 1
+        sub lam-ar.medi alef-ar.fina by lam-alef.fina; # Rule 2
     } calt;
 
-what is going to happen? The shaper will work through the string in visual order (as we mentioned in the previous chapter), seeing the glyphs `alef-ar.fina lam-ar.medi kaf-ar.init`. It sees the first pair of glyphs, and applies Rule 2 above, meaning that the new string is `lam-alef.fina kaf-ar.init`. It tries to match any rule against this new string, but nothing matches.
+what is going to happen? The shaper will work through the string, seeing the glyphs ` kaf-ar.init lam-ar.medi alef-ar.fina`. It sees the first pair of glyphs, and applies Rule 1 above, meaning that the new string is `kaf-lam.init alef-ar.fina`. It tries to match any rule against this new string, but nothing matches.
 
 Let's now rewrite this feature using chained contextual substitutions and glyph classes. Instead of creating a lam-alef ligature and a kaf-lam ligature, we split each ligature into two "marked" glyphs. Let's first do this for the lam-alef ligature. We design two glyphs, `alef-ar.fina.aleflam` and `lam-ar.medi.aleflam`, which look like this:
 
@@ -239,43 +241,45 @@ Let's now rewrite this feature using chained contextual substitutions and glyph 
 and then we substitute each glyph by its related "half-ligature":
 
     lookup AlefLam {
-        sub alef-ar.fina by alef-ar.fina.aleflam;
         sub lam-ar.medi by lam-ar.medi.aleflam;
+        sub alef-ar.fina by alef-ar.fina.aleflam;
     } AlefLam;
 
     feature calt {
         lookupflag IgnoreMarks;
-        sub alef-ar.fina' lookup AlefLam lam-ar.medi' lookup AlefLam;
+        sub lam-ar.medi' lookup AlefLam  alef-ar.fina' lookup AlefLam;
     }
 
-Now we declare that `lam-ar.medi.aleflam` is a variant form of medial lam, using a glyph class:
-
-    @lam.medi = [ lam-ar.medi lam-ar.medi.aleflam ... ];
-
-Finally, we create our variant kaf, which we call `kaf-ar.init.lamkaf`, and now we can apply the kaf-lam substitution to anything "lam-like":
+Finally, we create our variant kaf, which we call `kaf-ar.init.lamkaf`, and now we can apply the kaf-lam substitution:
 
     feature calt {
         lookupflag IgnoreMarks;
-        sub alef-ar.fina' lookup AlefLam lam-ar.medi' lookup AlefLam; # Rule 1
-        sub @lam.medi kaf-ar.init' by kaf-ar.init.lamkaf; # Rule 2
+        sub kaf-ar.init' lam.medi by kaf-ar.init.lamkaf; # Rule 1
+        sub lam-ar.medi' lookup AlefLam alef-ar.fina' lookup AlefLam; # Rule 2
     }
 
-Now when the shaper sees alef lam kaf, what happens? Alef and lam match rule 1, which chains into the "AlefLam" lookup; this converts the first glyph to `alef-ar.fina.aleflam` and the second to `lam-ar.medi.aleflam`. Now our string is `alef-ar.fina.aleflam lam-ar.medi.aleflam kaf-ar.init`. At which point, because `lam-ar.medi.aleflam` is part of the `@lam.medi` glyph class, rule 2 *also* matches, meaning that `kaf-ar.init` gets substituted for `kaf-ar.init.lamkaf`.
+Now when the shaper sees kaf lam alef, what happens? Kaf and lam match rule 1, which substitutes the kaf for its special initial form. Next, lam alef matches rule 2, which chains into the "AlefLam" lookup; this converts the first glyph to  `lam-ar.medi.aleflam` and the second to `alef-ar.fina.aleflam`.
 
 It's a little more convoluted, but this way we have a substitution arrangement that works not just by ligating a pair at a time, but which allows us to *continue* transforming glyphs across the string: alef-lam works, as does lam-kaf, but they also both work together.
 
-## Devanagari
+## Other complex scripts
 
-Cluster reordering
+Designing for Indic scripts such as Devanagari is pretty much the same as any other script: know your script, do your research, read the Microsoft [script development guidelines](https://docs.microsoft.com/en-gb/typography/script-development/devanagari). In terms of OpenType Layout, these guidelines contain a helpful list of features you will need to implement, and some hints for [how you should implement them]([https://docs.microsoft.com/en-gb/typography/script-development/devanagari#feature-examples).
 
-Reph forms.
-See e.g.
+But this is made complicated by the fact that the shaping engine contributes its own knowledge to the process. Just as how, in Arabic, the shaping engine will automatically "call" the `init`, `medi` and `fina` features to obtain the correct glyphs for characters in certain positions, Shaping engines like Harfbuzz and Uniscribe contain code which handle various special cases required by different script systems - syllable reordering in Indic scripts, *jamo* composition in Hangul, presentation forms in Hebrew, adjustment of tone mark placement in Thai, and so on.
 
-https://github.com/itfoundry/hind/blob/master/family.fea
+As we've already mentioned, OpenType Layout is a collaborative process, and this is especially true for complex scripts. Your font has a role to play, and the shaping engine also has a role to play. To create a font which performs correctly, you need to have knowledge both of what the shaper is going to do on your behalf, and also how you are going to respond to what the shaper does.
+
+Let's take Devanagari as an example.
+
+First, the shaper will move pre
+reph
+half
+etc.
 
 ## The Universal Shaping Engine
 
-Do you remember how the script tag for Devanagari is now `dev2` because Microsoft wrote two versions of its Indic shaper and the second one works better? This shows us that there is an awful lot of specialist knowledge that goes on inside the shaping engine. Shaping engines like Harfbuzz and Uniscribe contain code which handle various special cases required by different script systems - syllable reordering in Indic scripts, *jamo* composition in Hangul, presentation forms in Hebrew, adjustment of tone mark placement in Thai, and so on.
+In the previous section we looked at how shapers contain specialist knowledge, automatically activating particular features and performing glyph reordering based on the expectations of a particular script.
 
 Of course, there's a problem with this. If the shaper contains all the knowledge about how to organise a script, that means that when a new script is encoded and fonts are created for it, we need to wait until the shaping engines are updated with new handling code to deal with the new script. Even when the code *is* added to the shaper, fonts won't be properly supported in older versions of the software, and in the case of commercial shaping engines, it may not actually make economic sense for the developer to spend time writing specific shaping code for minority scripts anyway.
 
