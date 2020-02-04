@@ -268,14 +268,34 @@ Designing for Indic scripts such as Devanagari is pretty much the same as any ot
 
 But this is made complicated by the fact that the shaping engine contributes its own knowledge to the process. Just as how, in Arabic, the shaping engine will automatically "call" the `init`, `medi` and `fina` features to obtain the correct glyphs for characters in certain positions, Shaping engines like Harfbuzz and Uniscribe contain code which handle various special cases required by different script systems - syllable reordering in Indic scripts, *jamo* composition in Hangul, presentation forms in Hebrew, adjustment of tone mark placement in Thai, and so on.
 
-As we've already mentioned, OpenType Layout is a collaborative process, and this is especially true for complex scripts. Your font has a role to play, and the shaping engine also has a role to play. To create a font which performs correctly, you need to have knowledge both of what the shaper is going to do on your behalf, and also how you are going to respond to what the shaper does.
+As we've already mentioned, OpenType Layout is a collaborative process, and this is especially true for complex scripts. There is a complex dance between what the shaper signals to your font and what your font signals to the shaper. To create a font which performs correctly, you need to have knowledge both of what the shaper is going to do on your behalf, and also how you are going to respond to what the shaper does.
 
 Let's take Devanagari as an example.
 
-First, the shaper will move pre
-reph
-half
-etc.
+First, the shaper will move pre-base matras (such as the "i" vowel) before the base consonant. But what is the base consonant? Here's the thing: your font helps the shaper decide. Consider the made-up syllable "kgi" - ka, virama, ga, i-matra. Without special treatment, we can expect the vowel to apply to the base consonant "ga", like so:
+
+![](localisation/kgi-1.png)
+
+But if the ka takes a half-form, (which of course it should in this case) then the matra applies to the whole cluster and should appear at the beginning. By adding the half-form *feature* to your font
+
+        feature half {
+            sub ka-deva halant-deva by k-deva;
+        } half;
+
+you signal to the layout engine that the matra should cover the whole cluster:
+
+![](localisation/kgi-2.png)
+
+Again, this is something we can see clearly with the `hb-shape` utility:
+
+        $ hb-shape --features='-half' Hind-Regular.otf 'क्गि'
+        [dvKA=0+771|dvVirama=0@-253,0+0|dvmI.a05=2+265|dvGA=2+574]
+
+        $ hb-shape --features='+half' Hind-Regular.otf 'क्गि'
+        [dvmI=0+265|dvK=0+519|dvGA=0+574]
+
+
+blwf/vatu/pstf/pref "signals" consonant position
 
 ## The Universal Shaping Engine
 
