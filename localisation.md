@@ -442,10 +442,6 @@ Rather than having to write a new shaper for each script, shaping engine maintai
 
 Additionally, the USE's maximal cluster model (which allows us to produce crazy clusters such as the Balinese example above) *more or less* fits all scripts, although John Hudson has found an exception in the case of Tai Tham. In his words, "the Universal Shaping Engine turns out to be not quite universal in this sense either. But it’s pretty darn close, and is a remarkable achievement." It most certainly is.
 
-## Vertical typesetting
-
-vhea, vmtx, VORG
-
 ## Resources
 
 To finish, here is a list of resources which may help you when designing and implementing for global scripts:
