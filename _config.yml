@@ -8,3 +8,4 @@ github_username:  simoncozens
 
 # Build settings
 markdown: kramdown
+exclude: [casile]

@@ -21,7 +21,7 @@ The idea was revived with the advent of digital typography. In 1964, the IBM 226
 
 Much has changed since the early bitmap fonts, but in a sense one thing has not. The move from Gutenberg's rectangular metal sorts to rectangular 9x14 digital bitmaps ensured that computer typography would be dominated by the alignment of rectangles along a common baseline - an unfortunate situation for writing systems which don't consist of a straight line of rectangles.
 
-![nastaleeq](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Ghafeleye_Omr.svg/640px-Ghafeleye_Omr.svg.png)
+![Nastaleeq calligraphy by حححححححح (Wikipedia)](history/640px-Ghafeleye_Omr.svg.png)
 
 > No OpenType for you!
 
@@ -161,7 +161,7 @@ In 1540, François Guyot released the first *typeface family* - his Double Pica 
 
 But what if nine weights is not enough? More realistically, what if the designer has only provided a regular and a related bold, and you need something in the middle? The one development Adobe attempted to make to their Type 1 PostScript font format in 1991 was the idea of *multiple masters* which aimed to solve this problem: the font would contain two or more sets of outlines, and the user could "blend" their own font from some proportion of the two. They could mix 3 parts the regular weight to 1 part bold weight to create a sort of hemi-semi-bold.
 
-![mm](history/MM.gif)
+![Adobe Multiple Master axes for Myriad](history/MM.png)
 
 > Adobe Myriad MM, with width (left to right) and weight (top to bottom) masters
 

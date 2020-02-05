@@ -247,7 +247,7 @@ Let's take the different form of the `pos` instruction first. Whereas the three-
 
 What does this do? When "B" follows "A" in a text, we add 50 units of advance to the "B"; this has the effect of opening up the space between "B" and whatever glyph follows it.
 
-But in our Devanagari example, we don't want to move the mark across - we want to move it down. Enter the second form of the value record:
+But in our Devanagari example, we don't want to move the mark across - we want to move it down. Remember our discussion of the difference between [advance and positioning](concepts.md#Advance%20and%20Positioning)? Advance is for moving the *next* glyph, which positioning is for "picking up" the "pen" of the current glyph. Enter the second form of the value record:
 
     <xPos yPos xAdvance yAdvance>
 

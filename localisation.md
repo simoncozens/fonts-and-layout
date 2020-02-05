@@ -1,6 +1,7 @@
 ---
 layout: chapter
 title: OpenType for Global Scripts
+finished: true
 ---
 
 * TOC
@@ -272,7 +273,9 @@ As we've already mentioned, OpenType Layout is a collaborative process, and this
 
 Let's take Devanagari as an example.
 
-First, the shaper will move pre-base matras (such as the "i" vowel) before the base consonant. But what is the base consonant? Here's the thing: your font helps the shaper decide. Consider the made-up syllable "kgi" - ka, virama, ga, i-matra. Without special treatment, we can expect the vowel to apply to the base consonant "ga", like so:
+First, the shaper will move pre-base matras (such as the "i" vowel) before the base consonant, and any marks after the base. But what is the base consonant, and what is a mark? Here's the thing: your font helps the shaper decide.
+
+Consider the made-up syllable "kgi" - ka, virama, ga, i-matra. Without special treatment, we can expect the vowel to apply to the base consonant "ga", like so:
 
 ![](localisation/kgi-1.png)
 
@@ -294,12 +297,60 @@ Again, this is something we can see clearly with the `hb-shape` utility:
         $ hb-shape --features='+half' Hind-Regular.otf 'क्गि'
         [dvmI=0+265|dvK=0+519|dvGA=0+574]
 
+So the features defined in your font will change the way that the shaper applies glyph reordering - the script development specs calls this "dynamic character properties" - and conversely, if you do *not* provide appropriate substitutions for half-forms then your glyphs may not appear in the order you expect!
 
-blwf/vatu/pstf/pref "signals" consonant position
+Similar dynamic properties apply in other features too. The shaper will test each consonant-halant pair to see if the `half` or `rphf` (reph form,  above-base form of the letter ra) features apply to them and create a ligature. If they do, the consonant is not considered a base.
+if the reph form is part of a mark class, it will be moved to *after* the base.
+
+To see these reorderings in action, I created a dummy font which simply encodes each glyph by its Unicode codepoint. I then added the following features:
+
+    languagesystem DFLT dflt;
+    languagesystem dev2 dflt;
+
+    feature half {
+      # ka virama -> k
+      sub uni0915 uni094D by glyph01;
+    } half;
+
+    feature rphf {
+      # ra virama -> reph
+      sub uni0930 uni094D by glyph02;
+    } rphf;
+
+Let's use this to shape the syllable "rkki" (ra, virama, ka, virama, ka, i-matra):
+
+    $ hb-shape Devanagari-Test.otf 'र्क्कि'
+    [glyph02=0+600|uni093F=2+600|glyph01=2+600|uni0915=2+600]
+
+The ra-virama turned into our reph form; the ka-virama turned into a half form; and the sequence was reordered to be "reph i-matra k ka". Oops, that's not quite right. We want the reph form to appear at the end of the sequence. We'll add another line to our feature file, stating that `glyph02` (our "reph" form) should be interpreted as a mark:
+
+    markClass glyph02 <anchor 0 0> @reph_is_mark;
+
+How does that change things?
+
+    $ hb-shape Devanagari-Test.otf 'र्क्कि'
+    [uni093F=0+600|glyph01=0+600|uni0915=0+600|glyph02=0+600]
+
+That's fixed it - the "mark" reph form is moved to the end of the syllable cluster, where we want it.
+
+> If you want to get clever and have a variant reph form to match the i-matra, have a look at the [feature file](https://github.com/itfoundry/hind/blob/master/family.fea) for Indian Type Foundry's Hind family.
+
+The `rphf` and `half` features are tested against consonant-virama pairs; when a virama appears *before* a consonant, the pair is tested to see if any pre-base forms (`pref` feature), below-base forms (`blwf`) or post-base forms (`pstf`) are substituted; if so, these forms will not be considered the base consonant. Pre-base consonants identified by substitutions in the `pref` feature will also be reordered.
+
+The script development specs advise that all consonants should have a nukta form, implemented in the `nukt` feature. While you could do this by providing positioning information for the nukta on the base, the Indian Type Foundry recommends providing substitution glyphs with nuktas in order to avoid problems when forming ligatures. You will also want to provide rakaar forms using the `rkrf` feature; these will be processed after the nukta and akhand ligatures are processed, so will take the output of these features:
+
+    feature nukt {
+        sub ka-deva nukta-deva by kxa-deva;
+    }
+    feature rkrf {
+        sub ka-deva halant-deva ra-deva by kra-deva;
+        # Also include glyphs output from nukta feature
+        sub kxa-deva halant-deva ra-deva by kxra-deva;
+    }
 
 ## The Universal Shaping Engine
 
-In the previous section we looked at how shapers contain specialist knowledge, automatically activating particular features and performing glyph reordering based on the expectations of a particular script.
+In the previous section we looked at how shapers contain specialist knowledge, automatically activating particular features and performing glyph reordering based on the expectations of a particular script. The Indic shaper has a lot of linguistic information in it - it knows how to reorder glyphs around the base consonant, and it further knows that when half forms or reph forms are present, the way that reordering happens should change.
 
 Of course, there's a problem with this. If the shaper contains all the knowledge about how to organise a script, that means that when a new script is encoded and fonts are created for it, we need to wait until the shaping engines are updated with new handling code to deal with the new script. Even when the code *is* added to the shaper, fonts won't be properly supported in older versions of the software, and in the case of commercial shaping engines, it may not actually make economic sense for the developer to spend time writing specific shaping code for minority scripts anyway.
 
