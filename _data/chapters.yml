@@ -6,7 +6,7 @@
 - { fn: features-2, title: "Substitution and Positioning Rules", some: 1}
 - { fn: localisation, title: "OpenType for Global Scripts", some: 1}
 - { fn: adv-features, title: "Advanced Feature Programming "}
-- { fn: layout, title: "Layout Challenges in Global Type "}
+- { fn: layout, title: "Layout Challenges in Global Type", some: 1}
 - { fn: hint, title: "Rasterisation and Hinting "}
 - { fn: web, title: "Fonts on the Web "}
 - { fn: freetype, title: "OpenType for Programmers: Freetype2 "}

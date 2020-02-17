@@ -1,0 +1,6 @@
+\begin[papersize=a5]{document}
+\define[command=ar]{\font[family=Noto Naskh Arabic]{\process}}
+
+A quote from Wikipedia: "\ar{تعود أصل الكلمة إلى الإغريقية:} δηνάριον (\ar{ديناريوس})."
+\end{document}
+
