@@ -61,7 +61,7 @@ But while copying others is a good way to get started, it's also helpful to reas
 
 > Don't get *too* stressed out about choosing the right feature for your rules. If you put the rule in a strange feature but your font behaves in the way that you want it to, that's good enough; there is no OpenType Police who will tell you off for violating the specification. Heck, you can put substitution rules in the `kern` feature if you like, and people might look at you funny but it'll probably work fine. The only time this gets critical is when we are talking about (a) features which are selected by the user interface of the application doing the layout (for example, the `smcp` feature is usually turned on when the user asks for small caps, and it would be bizarre - and arguably *wrong* - if this also turned on additional ligatures), and (b) more complex fonts with a large number of rules which need to be processed in a specific order. Getting things in the right place in the processing chain will increase the chances of your font behaving in the way you expect it to, and, more importantly, will reduce the chances of features interacting with each other in unexpected ways.
 
-Let's suppose we are implementing a font for the Takri script of north-west India. There's no Script Development Standard for Takri, so we're on our own. We've designed our glyphs, but we've found a problem. When a consonant has a i-matra and an anusvara, we'd like to move the anusvara closer to the matra. So instead of:
+Let's suppose we are implementing a font for the Takri script of north-west India. There's no Script Development Standard for Takri, so we're on our own. We've designed our glyphs, but we've found a problem. When a consonant has an i-matra and an anusvara, we'd like to move the anusvara closer to the matra. So instead of:
 
 ![](localisation/takri-1.png)
 
@@ -69,10 +69,10 @@ we want to see:
 
 ![](localisation/takri-2.png)
 
-We've designed a new glyph `iMatra.anusvara` which contains both the matra and the correctly-positioned anusvara, and we've written a chained contextual substitution rule:
+We've designed a new glyph `iMatra_anusvara` which contains both the matra and the correctly-positioned anusvara, and we've written a chained contextual substitution rule:
 
     lookup iMatraAnusVara {
-        sub iMatra by iMatra.anusvara;
+        sub iMatra by iMatra_anusvara;
         sub anusvara by emptyGlyph;
     }
 
