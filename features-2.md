@@ -191,7 +191,7 @@ The problem is that the text might be vocalised. We still want this rule to appl
       sub @RaaWaw @aBaaDotBelow' by @aBaaLowDotBelow;
     } ss01;
 
-This lookup flag tells the shaper that, when processing this lookup, it should skip over combining marks. There's also `ignoreBaseGlyphs` which does the opposite and skips over base glyphs and *only* processes marks (and ligatures), but it's unlikely you'll ever need that.
+This lookup flag tells the shaper that, when processing this lookup, it should skip over combining marks. There's also `IgnoreBaseGlyphs` which does the opposite and skips over base glyphs and *only* processes marks (and ligatures), but it's unlikely you'll ever need that.
 
 > How does the shaper know what's a base glyph and what's a mark? You (or, more likely, your font editor) has to tell it, of course! In the Glyphs editor, for example, glyphs are placed in the "Mark" section if their Unicode value suggests they should be a mark; if you want to assign an arbitrary glyph to the mark category, you can hit command-option-I in the font view when the glyph is selected, and change its category assignment.
 > 
@@ -339,11 +339,12 @@ Our flat baseline is no longer flat any more! The shaper has connected the exit 
 Glyphs has done this semi-magically for us, but here is what is going on underneath. Cursive attachment is turned on using the `curs` feature, which is on by default for Arabic script. Inside the `curs` feature are a number of cursive attachment positioning rules, which define where the entry and exit anchors are:
 
     feature curs {
+        lookupflag RightToLeft
         position cursive lam.medi <anchor 643 386> <anchor -6 180>;
         position cursive gaf.init <anchor NULL>    <anchor 35 180>;
     } curs;
 
-(The initial forms have a `NULL` entry anchor, and of course final forms will have a `NULL` exit anchor.) The shaper is responsible for overlaying the anchors to make the exit point and its adjacent entry point fit together.
+(The initial forms have a `NULL` entry anchor, and of course final forms will have a `NULL` exit anchor.) The shaper is responsible for overlaying the anchors to make the exit point and its adjacent entry point fit together. In this case, the leftmost glyph (logically, the last character to be entered) is positioned on the baseline; this is the effect of the `lookupflag RightToLeft` statement. Without that, the rightmost glyph (first character) would be positioned on the baseline.
 
 ### Mark-to-base
 
