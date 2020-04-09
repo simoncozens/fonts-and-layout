@@ -46,12 +46,41 @@ The first step in the algorithm is to split up the input into a set of *runs* of
 
 ![](layout/bidi-unembedded.png)
 
-How Unicode defines ways of specifying that the Greek is embedded within the Arabic which is in turn embedded within the English. While it is visually equivalent to the above, this maintains the semantic distinction between the levels:
+However, Unicode defines ways of specifying that the Greek is embedded within the Arabic which is in turn embedded within the English, through the addition of U+202A LEFT-TO-RIGHT EMBEDDING and U+202B RIGHT-TO-LEFT EMBEDDING characters. While it is visually equivalent to the above, this maintains the semantic distinction between the levels:
 
 ![](layout/bidi-embedding.png)
 
-Strong and weak characters
-(Mirroring)
+> There are a bunch of other similar bidi control characters defined by the Unicode standard, which we're not going to mention here, but which a conformant bidi algorithm will need to deal with.
+
+Once the bidi algorithm has established the embedding levels, it can re-order
+the glyphs such that the text appears in visual order. Hooray - we're done with bidirectionality! Except that we're not, of course: for example, groups of numbers embedded in RTL text should *not* be swapped around; brackets and other paired characters should be *mirrored* rather than reordered:
+
+    Logical order:          H e b r e w  ( 1 2 3 ע ב ר א )
+    Incorrect visual order: H e b r e w  ) 3 2 1 ע ב ר א (
+    Correct visual order:   H e b r e w  ( 1 2 3 א ר ב ע )
+
+The Unicode Character Database contains information about which characters have *weak* directionality, such as numerals, which should be treated specially by the bidirectionality algorithm, and also which characters have mirrored pairs. The Unicode Bidirectionality Algorithm specifies the rules for handling this data correctly so that all the nasty corner cases work out fine.
+
+So, as a layout system implementer, how should you proceed? The recommendation in the UAX #9 which specifies the algorithm recommends that text is first handed to the bidi algorithm to resolve the levels, then the runs identified by the algorithm are passed to the shaper to be shaped independently, and then the reordering should take place. But that's just the recommendation. In reality, it doesn't actually matter *when* you shape the runs. `libraqm` resolves the levels, then reorders, then shapes; the SILE typesetter shapes, then resolves the levels, then reorders. So long as you perform all the steps on the appropriate runs, it will all work out.
+
+For example, using `fribidi`, the routine would look something like this:
+
+    /* Resolve levels*/
+    FriBidiCharType* btypes = calloc(string_l, sizeof (FriBidiCharType));
+    FriBidiBracketType *bracket_types = calloc(string_l, sizeof(FriBidiBracketType);
+    FriBidiLevel *embedding_levels = calloc(string_l, sizeof(FriBidiLevel));
+
+    FriBidiParType base_dir = FRIBIDI_PAR_LTR; // Or ..._RTL
+    fribidi_get_bidi_types(string, string_l, &btypes);
+    fribidi_get_bracket_types(string, string_l, btypes, &bracket_types);
+    fribidi_get_par_embedding_levels_ex(btypes,
+                                        bracket_types,
+                                        string_l,
+                                        &base_dir,
+                                        &embedding_levels);
+
+        /* Shape each run */
+      for (size_t i = 0; i < run_count; i++)
 
 
 ## Other directionality (vertical etc.)
