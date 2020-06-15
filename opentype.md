@@ -267,7 +267,7 @@ Unfortunately, as with the rest of OpenType, the ugliest thing is that it is a c
 
 There may be further entries *for each platform* if the creator's name should appear differently in different scripts: a Middle Eastern type designer may wish their name to appear in Arabic when the font is used in an Arabic environment, or in Latin script otherwise.
 
-While it's *in theory* possible to create non-Latin string entries for the Mac platform, nobody really seems to do this. Encode all your non-Latin strings for the Windows platform (`platformID=3`) in UTF-32, choose the appropriate [language ID](https://www.microsoft.com/typography/otspec180/name.htm) from the OpenType specification, and you should be OK.
+Name entry records on the Mac platform are usually entered in the Latin script. While it's *in theory* possible to create string entries in other scripts, nobody really seems to do this. For the Windows platform (`platformID=3`), if you're using a script other than Latin for a name record, encode your strings in UTF-32, choose the appropriate [language ID](https://www.microsoft.com/typography/otspec180/name.htm) from the OpenType specification, and you should be OK.
 
 ### The `cmap` table
 
