@@ -26,10 +26,9 @@
   \node (metricsbox) [draw=black!50, fit={(metrics) (gmetrics) (metricsa) (metricsdots)}] {};
 
   \node (otmagic) [right=of metrics, typetag] { Advanced Typography };
-  \node (ligs) [below=of otmagic] { Ligatures };
-  \node (kerns) [below=of ligs] { Kerns };
-  \node (otdots) [below=of kerns] { \dots };
-  \node (otbox) [draw=black!50, fit={(otmagic) (ligs) (kerns) (otdots)}] {};
+  \node (ligs) [below=of otmagic] { Substitution Rules };
+  \node (kerns) [below=of ligs] { Positioning Rules };
+  \node (otbox) [draw=black!50, fit={(otmagic) (ligs) (kerns) }] {};
 
   \node [draw=black!50, fit={(toplevel) (gm) (outbox) (metricsbox) (otbox)}] {};
 \end{tikzpicture}
