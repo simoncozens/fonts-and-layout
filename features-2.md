@@ -13,13 +13,7 @@ In this chapter, we'll examine each of these types of rule, by taking examples o
 
 ## Types of Substitution Rule
 
-The first stage in OpenType layout processing is to go through the appropriate lookups and rules in the substitution table (`GSUB`). These rules rewrite the input stream, substituting one glyph (or a series of glyphs) for other glyphs. The Arabic `medi` feature, for example, makes sure that a glyph in the middle of a word is replaced by the glyph representing its medial form.
-
-For some of these features, your glyph editing software may do something clever on your behalf - for example, it may implement the `medi` feature automatically, by looking for specially-named glyphs whose names end with `.medi` and generating substitution rules for you. Although that's an incredibly powerful tool, it's important to understand what is actually going on underneath. If you understand the feature code that is being generated behind the scenes, you can customize it if it doesn't quite do what you want, and you can use it as building blocks from which to build up your own more sophisticated features.
-
-### Single Substitution
-
-The simplest type of substitution feature available in the `GSUB` table is a single, one-to-one substitution: when the feature is turned on, one glyph becomes another glyph. A good example of this is small capitals: when your small capitals feature is turned on, you substitute "A" by "A.sc", "B" by "B.sc" and so on. Arabic joining is another example: the shaper will automatically turn on the `fina` feature for the final glyph in a conjoined form.
+The simplest type of substitution feature available in the `GSUB` table is a single, one-to-one substitution: when the feature is turned on, one glyph becomes another glyph. A good example of this is small capitals: when your small capitals feature is turned on, you substitute "A" by "A.sc", "B" by "B.sc" and so on. Arabic joining is another example: the shaper will automatically turn on the `fina` feature for the final glyph in a conjoined form, but we need to tell it which substitution to make.
 
 The possible syntaxes for a single substitution are:
 
@@ -48,7 +42,7 @@ Again, in these particular situations, your font editing software may pick up on
 
 Single substitution was one-to-one. Multiple substitution is one-to-many: it decomposes one glyph into multiple different glyphs. The syntax is pretty similar, but with one thing on the left of the `by` and many things on the right.
 
-This is a pretty rare thing to want to do, but it can be useful if you have situations where composed glyphs with marks are replaced by a decomposition of another glyph and a combining mark. For example, sticking with the Arabic final form idea, if you haven't designed a specific glyph for alif madda in final form, you can get around it by doing this:
+This can be useful if you have situations where composed glyphs with marks are replaced by a decomposition of another glyph and a combining mark. For example, sticking with the Arabic final form idea, if you haven't designed a specific glyph for alif madda in final form, you can get around it by doing this:
 
     feature fina {
         # Alif madda -> final alif + madda above
@@ -56,6 +50,16 @@ This is a pretty rare thing to want to do, but it can be useful if you have situ
     }
 
 This tells the shaper to split up final alif madda into two glyphs; you have the final form of alif, and so long as your madda mark is correctly positioned, you are essentially synthesizing a new glyph out of the two others.
+
+In fact, when engineering Arabic fonts, it can be extremely useful to separate the dots (*nukta*) from the base glyphs (*rasm*). This allows you to reposition the dots independently of the base characters, and it can reduce the number of glyphs that you need to design and write rules for, as you only need to draw and engineer the "skeleton" form for each character.
+
+To do this, you would add empty glyphs to the font so that the Unicode codepoints can be mapped properly, but have the outline provided by other glyphs substituted in the `ccmp` (glyph composition and decomposition feature). For example, we can provide the glyph ز (zain) by having an empty `zain-ar` glyph mapped to codepoint U+0632, but in our `ccmp` feature do this:
+
+    feature ccmp {
+      sub zain-ar by reh-ar dot-above;
+    } ccmp;
+
+With this rule applied, we now no longer need to deal with zain as a special case - any future rule which applies to reh will deal correctly with the zain situation as well, so you have fewer "letters" to think about.
 
 ### Alternate substitution
 
@@ -81,7 +85,7 @@ Another use of this substitution comes in mathematics handling. The `ssty` featu
 
 We've done one to one, and we've done one to many - *ligature substitution* is a many-to-one substitution. You substitute multiple glyphs on the left `by` the one on the right.
 
-The classic example for Latin script is how the two glyphs "f" and "i" become the single glyph "fi", but let's take a more interesting example. In the Khmer script, when two consonants appear without a vowel between them, the second consonant is written below the first and in a special form. This consonant stack is called a "coeng", and the convention in Unicode is to encode the stack as CONSONANT 1, U+17D2 KHMER SIGN COENG, CONSONANT 2. (You need the explicit coeng because Khmer is written without word boundaries, and a word-ending consonant followed by a word-beginning consonant shouldn't trigger a stack.)
+The classic example for Latin script is how the two glyphs "f" and "i" become the single glyph "fi", but we've done that one already. In the Khmer script, when two consonants appear without a vowel between them, the second consonant is written below the first and in a special form. This consonant stack is called a "coeng", and the convention in Unicode is to encode the stack as CONSONANT 1, U+17D2 KHMER SIGN COENG, CONSONANT 2. (You need the explicit coeng because Khmer is written without word boundaries, and a word-ending consonant followed by a word-beginning consonant shouldn't trigger a stack.)
 
 So, whenever we see U+17D2 KHMER SIGN COENG followed by a consonant, we should transform this into the special form of the consonant and tuck it below the base consonant.
 
@@ -97,25 +101,83 @@ As you can see from the diagram above, the first consonant doesn't change; we ju
 
 In the next chapter, we'll explore in the next chapter why, instead of ligatures for Arabic rules, you might want to use the following lookup type instead: contextual substitutions.
 
-### Contextual Substitution
+### Chaining Substitutions
 
 The substitutions we've seen so far have applied globally - whenever the input glyph matches the rule, the substitution gets made. But what if we want to say that the rule should only apply in certain circumstances?
 
-The next three lookups do just this. They set the *context* in which a rule applies, and then they either specify a substitution to be carried out when the context matches or they can refer to another lookup. The context is made up of what comes before the sequence we want to match (the prefix, or *backtrack*), the input sequence itself, and what comes after the input sequence (the suffix, or *lookahead*).
+The next three lookups do just this. They set the *context* in which a rule applies, and then they specify another lookup or lookups which are invoked at the given positions. The context is made up of what comes before the sequence we want to match (the prefix, or *backtrack*), the input sequence and lookups, and what comes after the input sequence (the suffix, or *lookahead*).
 
-We'll start with a silly example to demonstrate the concept: suppose we want to apply the `f i -> f_i` ligature, but only after a capital letter. In this case, the *backtrack* is the set of capital letters, the *input* is `f i`, and the *lookahead* is empty (not provided). Here is the ordinary ligature substitution, which we would use if we didn't care about the context:
+Let's take a couple of examples to explain this concept. We'll start with a Latin one, taken from the [Libertinus](https://github.com/alif-type/libertinus) fonts. When a Latin capital letter is followed by an accent, then we want to substitute *some* of those accents by specially designed forms to fit over the capitals:
 
-    sub f i by f_i;
+    @capitals = [A B C D E F G H I J K L M N O P Q R S U X Z...];
+    @accents  = [gravecomb acutecomb uni0302 tildecomb ...];
 
-To turn this into a contextual substitution, we write down the whole sequence - backtrack, input, lookahead - and mark each element of the input sequence with an apostrophe character. That gives us:
+    lookup ccmp_cap_accents {
+      sub acutecomb by acute.cap;
+      sub gravecomb by grave.cap;
+      sub uni0302 by circumflex.cap;
+      sub uni0306 by breve.cap;
+    } ccmp_cap_accents;
 
-    sub [A - Z] f' i' by f_i;
+    feature ccmp {
+        sub @capitals @accents' lookup ccmp_cap_accents;
+    } ccmp;
 
-Now the ligature substitution is conditioned on the upper-case letters. (Although we would probably want to use a glyph class rather than `[A-Z]` to allow for accented letters.)
+What this says is: when we see a capital followed by an accent, we're going to substitute the accent (it's the replacement sequence, so it gets an apostrophe). But *how* we do the substitution depends on another lookup we now reference: acute accents for capital acutes, grave accents for capital graves, and so on. The tilde accent does not have a capital form, so is not replaced.
 
-Note carefully what the apostrophe characters do in this rule: they mark the sequence to be replaced. If you were to read it without thinking about the apostrophes, you might think that the rule substitutes the *capital* as well as the f and the i by the ligature. But that is not what happens. When apostrophes are present, we have a contextual substitution, and only those input glyphs which are marked will be replaced.
+We can also use this trick to perform a *many to many* substitution, which OpenType does not directly support. In Urdu the `yehbarree-ar.fina` glyph "goes backwards" with a large negative right sidebearing, and if not handled carefully can bump into glyphs behind it. When `threedotsdownbelow-ar` occurs before a `yehbarre-ar.fina`, we want to insert an `extender` glyph to give a little more room for the dots. Here's what we want to achieve:
 
-OK, now we are a bit more clear on the concept, let's try a more reasonable example. Devanagari is an abugida script, where each consonant has an implicit vowel "a" sound. If you want to change that vowel, you precede the consonant with a *matra*. The "i" matra looks a little bit like the Latin letter f, but its hook is normally designed to stretch across the length of the consonant it follows. Of course, this gives us a problem: the consonants have differing widths. What we need to do, then, is design a bunch of i-matra glyphs of different widths, and when i-matra is followed by a consonant, substitute it by the variant matra glyph with the appropriate width. For example:
+```
+feature rlig {
+lookup bari_ye_collision {
+   sub threedotsdownbelow-ar yehbarree-ar.fina by threedotsdownbelow-ar extender yehbarree-ar.fina;
+} bari_ye_collision;
+} rlig;
+```
+
+But of course we can't do this because OpenType doesn't support many-to-many substitutions. This is where chaining rules come in. To write a chaining rule, first we create a lookup which explains *what* we want to do:
+
+```
+lookup add_extender_before {
+   sub yehbarree-ar.fina by extender yehbarree-ar.fina;
+} add_extender_before;
+```
+
+Next we create a lookup which explains *when* we want to do it:
+
+```
+feature rlig {
+lookup bari_ye_collision {
+   sub threedotsdownbelow-ar yehbarree-ar.fina' lookup add_extender_before;
+} bari_ye_collision;
+} rlig;
+```
+
+Read this as "when a `threedotsdownbelow-ar` precedes a `yehbarree-ar.fina`, then call the `add_extender_before` lookup." This lookup applies to that `yehbarree-ar.fina` glyph and replaces it with `extender yehbarree-ar.fina`, giving the dots a bit more space.
+
+Let's take another example from the Amiri font, which contains many calligraphic substitutions and special forms. One of these substitutions is that the sequence beh rah (بر) *and all similar forms based on the same shape* is replaced by another pair of glyphs with a better calligraphic cadence. (Actually, this needs to be done in two cases: when the beh-rah is at the start of the word, and when it is at the end. But we're going to focus on the one where it is at the end.) How do we do this?
+
+First, we declare our feature and say that we're not interested in mark glyphs. Then, when we see a beh-like glyph (which includes not only beh, but yeh, noon, beh with three dots, and so on) in its medial form and a rah-like glyph (or jeh, or zain...) in its final form, then *both* of those glyphs will be subject to a secondary lookup.
+
+    @aBaa.medi = [ uni0777.medi uni0680.medi ... ];
+    @aRaa.fina = [ uni0691.fina uni0692.fina ... ];
+
+    feature calt {
+      lookupflag IgnoreMarks;
+      sub [@aBaa.medi]' lookup BaaRaaFina
+          [@aRaa.fina]' lookup BaaRaaFina;
+    } calt;
+
+The secondary lookup will turn beh-like glyphs into a beh-rah ligature form of beh, and all of the rah-like glyphs into a beh-rah ligature form of rah:
+
+    lookup BaaRaaFina {
+      sub @aBaa.medi by @aBaa.medi_BaaRaaFina;
+      sub @aRaa.fina by @aRaa.fina_BaaRaaFina;
+    } BaaRaaFina;
+
+Because this lookup will only be executed when beh and rah appear together, and because it will be executed twice in the rule we gave above, it will change both the beh-like glyph *and* the rah-like glyph for their contextual calligraphic variants.
+
+Let's try another example from another script, with a slightly different syntax. Devanagari is an abugida script, where each consonant has an implicit vowel "a" sound. If you want to change that vowel, you precede the consonant with a *matra*. The "i" matra looks a little bit like the Latin letter f, but its hook is normally designed to stretch across the length of the consonant it follows and "point to" the stem of the consonant. Of course, this gives us a problem: the consonants have differing widths. What we need to do, then, is design a bunch of i-matra glyphs of different widths, and when i-matra is followed by a consonant, substitute it by the variant matra glyph with the appropriate width. For example:
 
     @width1_consonants = [ra-deva rra-deva];
     @width2_consonants = [ttha-deva tha-deva];
@@ -123,17 +185,34 @@ OK, now we are a bit more clear on the concept, let's try a more reasonable exam
     ...
 
     feature pres {
-      sub iMatra-deva' @width1_consonants by iMatra-deva.1;
-      sub iMatra-deva' @width2_consonants by iMatra-deva.2;
-      sub iMatra-deva' @width3_consonants by iMatra-deva.3;
-      ...
-    }
+      lookup imatra {
+        sub iMatra-deva' @width1_consonants by iMatra-deva.1;
+        sub iMatra-deva' @width2_consonants by iMatra-deva.2;
+        sub iMatra-deva' @width3_consonants by iMatra-deva.3;
+        ...
+      } imatra;
+    } pres;
+
+Notice that here we are using a syntax which allows us to define both the "what we want to do" lookup (the substitution) and the "when we want to do it" lookup in the same line. The feature compiler will implicitly convert what we have written to:
+
+    lookup i1 { sub iMatra-deva' by iMatra-deva.1 } i1;
+    lookup i2 { sub iMatra-deva' by iMatra-deva.2 } i2;
+    lookup i3 { sub iMatra-deva' by iMatra-deva.3 } i3;
+
+    feature pres {
+      lookup imatra {
+        sub iMatra-deva' lookup i1 @width1_consonants;
+        sub iMatra-deva' lookup i2 @width2_consonants;
+        sub iMatra-deva' lookup i3 @width3_consonants;
+        ...
+      } imatra;
+    } pres;
+
+> Again I would encourage you to use the more explicit syntax yourself in all but the simplest of cases to avoid surprises.
 
 We put this in the `pres` (pre-base substitution) feature, which is designed for substituting pre-base vowels with their conjunct forms, and is normally turned on by shapers when handling Devanagari. The following figure shows the effect of the feature above:
 
 ![](features/i-matra.png)
-
-At each text position, the contextual rules are tried in turn, and the first matching rule is applied. When the rule is matched, the processing of this feature ends.
 
 In some cases, you may want to forego a substitution or set of substitutions in particular contexts. For example, in Malayalam, the sequence ka, virama, sa) should appear as a stacked Akhand character "Kssa" - except if the sa is followed by certain vowel sounds which change the form of the sa.
 
@@ -174,7 +253,7 @@ We said that `ignore` only terminates processing of a *lookup*. If you only want
       # But could be matched here.
     }
 
-When performing contextual substitutions, you may only be interested in certain kinds of glyph. For example, the Arabic font [Amiri](https://github.com/alif-type/amiri) has an optional stylistic feature whereby if the letter beh follows a waw or rah (for example, in the word ربن - the name "Rabban", or the word "ribbon" in Urdu) then the nukta on the beh is dropped down:
+We can combine contextual substitutions with lookup flags for situations when we want the context to only be interested in certain kinds of glyph. For example, the Arabic font [Amiri](https://github.com/alif-type/amiri) has an optional stylistic feature whereby if the letter beh follows a waw or rah (for example, in the word ربن - the name "Rabban", or the word "ribbon" in Urdu) then the nukta on the beh is dropped down:
 
 ![](features/amiri-beh.png)
 
@@ -184,62 +263,12 @@ By now we know how to achieve this:
       sub @RaaWaw @aBaaDotBelow' by @aBaaLowDotBelow;
     } ss01;
 
-The problem is that the text might be vocalised. We still want this rule to apply even if, for example, there is a fatah placed above the rah (رَبَن). We could, of course, attempt to write a context which would apply to rah and waw plus marks all possible combinations of the mark characters, but the easier solution is to tell the shaper that we are not interested in mark characters when applying this rule, only base characters. It's time for those "lookup flags" I told you about:
+The problem is that the text might be vocalised. We still want this rule to apply even if, for example, there is a fatah placed above the rah (رَبَن). We could, of course, attempt to write a context which would apply to rah and waw plus marks all possible combinations of the mark characters, but the easier solution is to tell the shaper that we are not interested in mark characters when applying this rule, only base characters - another use for lookup flags.
 
     feature ss01 {
       lookupflag IgnoreMarks;
       sub @RaaWaw @aBaaDotBelow' by @aBaaLowDotBelow;
     } ss01;
-
-This lookup flag tells the shaper that, when processing this lookup, it should skip over combining marks. There's also `IgnoreBaseGlyphs` which does the opposite and skips over base glyphs and *only* processes marks (and ligatures), but it's unlikely you'll ever need that.
-
-> How does the shaper know what's a base glyph and what's a mark? You (or, more likely, your font editor) has to tell it, of course! In the Glyphs editor, for example, glyphs are placed in the "Mark" section if their Unicode value suggests they should be a mark; if you want to assign an arbitrary glyph to the mark category, you can hit command-option-I in the font view when the glyph is selected, and change its category assignment.
-> 
-> The list of glyphs and their categories gets filed into the `GDEF` table in the font. It's also possible to assign glyphs to categories manually by writing AFDKO feature code which rewrites the `GDEF` table contents; see [the feature file specification](http://adobe-type-tools.github.io/afdko/OpenTypeFeatureFileSpecification.html#9.b).
-
-### Chained Contextual Substitution
-
-A chained contextual substitution is an extension of the contextual substitution rule that calls out to other lookups as it goes along. This allows you to perform more than one substitution for a given context; or choose from a range of substitutions to perform in a given context; or call lookups which call lookups which call lookups...
-
-A simple example is found in the [Libertinus](https://github.com/alif-type/libertinus) fonts. When a Latin capital letter is followed by an accent, then we want to substitute *some* of those accents by specially designed forms to fit over the capitals:
-
-    @capitals = [A B C D E F G H I J K L M N O P Q R S U X Z...];
-    @accents  = [gravecomb acutecomb uni0302 tildecomb ...];
-
-    lookup ccmp_cap_accents {
-      sub acutecomb by acute.cap;
-      sub gravecomb by grave.cap;
-      sub uni0302 by circumflex.cap;
-      sub uni0306 by breve.cap;
-    } ccmp_cap_accents;
-
-    feature ccmp {
-        sub @capitals @accents' lookup ccmp_cap_accents;
-    } ccmp;
-
-What this says is: when we see a capital followed by an accent, we're going to substitute the accent (it's the replacement sequence, so it gets an apostrophe). But *how* we do the substitution depends on another lookup we now reference: acute accents for capital acutes, grave accents for capital graves, and so on. The tilde accent does not have a capital form, so is not replaced.
-
-We can also use this trick to perform a *many to many* substitution, which OpenType does not directly support. Let's take another example from the Amiri font, which contains many calligraphic substitutions and special forms. One of these substitutions is that the sequence beh rah (بر) *and all similar forms based on the same shape* is replaced by another pair of glyphs with a better calligraphic cadence. (Actually, this needs to be done in two cases: when the beh-rah is at the start of the word, and when it is at the end. But we're going to focus on the one where it is at the end.) How do we do this?
-
-First, we declare our feature and say that we're not interested in mark glyphs. Then, when we see a beh-like glyph (which includes not only beh, but yeh, noon, beh with three dots, and so on) in its medial form and a rah-like glyph (or jeh, or zain...) in its final form, then *both* of those glyphs will be subject to a secondary lookup.
-
-    @aBaa.medi = [ uni0777.medi uni0680.medi ... ];
-    @aRaa.fina = [ uni0691.fina uni0692.fina ... ];
-
-    feature calt {
-      lookupflag IgnoreMarks;
-      sub [@aBaa.medi]' lookup BaaRaaFina
-          [@aRaa.fina]' lookup BaaRaaFina;
-    } calt;
-
-The secondary lookup will turn beh-like glyphs into a beh-rah ligature form of beh, and all of the rah-like glyphs into a beh-rah ligature form of rah:
-
-    lookup BaaRaaFina {
-      sub @aBaa.medi by @aBaa.medi_BaaRaaFina;
-      sub @aRaa.fina by @aRaa.fina_BaaRaaFina;
-    } BaaRaaFina;
-
-Because this lookup will only be executed when beh and rah appear together, and because it will be executed twice in the rule we gave above, it will change both the beh-like glyph *and* the rah-like glyph for their contextual calligraphic variants.
 
 ### Extension Substitution
 
@@ -251,11 +280,11 @@ Most of the time you don't need to care about this: your font editor may automat
       # Large number of kerning rules follow
     } EXTENDED_KERNING;
 
-> Kerning tables are obviously an example of very large *positioning* lookups, but they're the most common use of extensions. I haven't seen a *substitution* lookup that's so big it needs to use an extension.
+> Kerning tables are obviously an example of very large *positioning* lookups, but they're the most common use of extensions. If you ever get into a situation where you're procedurally generating rules in a loop from a scripting language, you might end up with a *substitution* lookup that's so big it needs to use an extension. As mention in the previous chapter `fonttools feaLib` will reorganise rules into extensions automatically for you, whereas `makeotf` will require you to place things into extensions manually - another reason to prefer `fonttools`.
 
 ### Reverse chained contextual substitution
 
-The final substitution type is extremely rare. I haven't found any recorded use of it outside of test fonts. It was designed for nastaliq style Arabic fonts (often, but not exclusively, used in Urdu typesetting). In that style, even though the input text is processed in right-to-left order, the calligraphic shape of the word is built up in left-to-right order: the form of each glyph is determined by the glyph which *precedes* it in the input order but *follows* it in the writing order.
+The final substitution type is designed for Nastaliq style Arabic fonts (often used in Urdu and Persian typesetting). In that style, even though the input text is processed in right-to-left order, the calligraphic shape of the word is built up in left-to-right order: the form of each glyph is determined by the glyph which *precedes* it in the input order but *follows* it in the writing order.
 
 So reverse chained contextual substitution is a substitution that is applied by the shaper *backwards in time*: it starts at the end of the input stream, and works backwards, and the reason this is so powerful is because it allows you to contextually condition the "current" lookup based on the results from "future" lookups.
 
@@ -285,11 +314,12 @@ But this is obviously limited: the number of digits processed will be equal to t
 
 > Notice that although the lookups are *processed* with the input stream in reverse order, they are still *written* with the input stream in normal order of appearance.
 
-This would be a brilliant solution... if the software worked. One reason this lookup type is rare (other than the fact that it breaks your head to try to work out how lookups should be processed backwards) is because it is not as widely supported as the other types. Applications which use CoreText and Harfbuzz can process reverse contextual substitution chains, but those based on Adobe's shaping engine such as Illustrator and InDesign do not support these lookups at the time of writing. (Yes, Adobe wrote the AFDKO. I know.)
+XXX Nastaliq
+
 
 ## Types of Positioning Rule
 
-After all the substitution rules have been processed, we should have the correct sequence of glyphs that we want to lay out. The next job is to run through the lookups in the `GPOS` table in the same way, to adjust the positioning of glyphs. We have seen one example of positioning rules: a simple kerning rule. We will see in this section that a number of other ways to reposition glyphs are possible.
+After all the substitution rules have been processed, we should have the correct sequence of glyphs that we want to lay out. The next job is to run through the lookups in the `GPOS` table in the same way, to adjust the positioning of glyphs. We have seen example of single and pair positioning rules:. We will see in this section that a number of other ways to reposition glyphs are possible.
 
 To be fair, most of these will be generated more easily and effectively by the user interface of your font editor - but not all of them. Let's dive in.
 
@@ -306,7 +336,7 @@ Remember that this adjusts the *placement* (placing the comma and full stop) 250
 
 ### Pair adjustment
 
-We've already seen pair adjustment rules: they're called kerns. They take two glyphs or glyphclasses, and move one glyphs around. We've also seen that there are two ways to express a pair adjustment rule. First, you place the value record after the two glyphs/glyph classes, and this adjusts the spacing between them.
+We've already seen pair adjustment rules: they're called kerns. They take two glyphs or glyphclasses, and move glyphs around. We've also seen that there are two ways to express a pair adjustment rule. First, you place the value record after the two glyphs/glyph classes, and this adjusts the spacing between them.
 
     pos A B -50;
 
@@ -339,14 +369,18 @@ Our flat baseline is no longer flat any more! The shaper has connected the exit 
 Glyphs has done this semi-magically for us, but here is what is going on underneath. Cursive attachment is turned on using the `curs` feature, which is on by default for Arabic script. Inside the `curs` feature are a number of cursive attachment positioning rules, which define where the entry and exit anchors are:
 
     feature curs {
-        lookupflag RightToLeft
+        lookupflag RightToLeft IgnoreMarks;
         position cursive lam.medi <anchor 643 386> <anchor -6 180>;
         position cursive gaf.init <anchor NULL>    <anchor 35 180>;
     } curs;
 
 (The initial forms have a `NULL` entry anchor, and of course final forms will have a `NULL` exit anchor.) The shaper is responsible for overlaying the anchors to make the exit point and its adjacent entry point fit together. In this case, the leftmost glyph (logically, the last character to be entered) is positioned on the baseline; this is the effect of the `lookupflag RightToLeft` statement. Without that, the rightmost glyph (first character) would be positioned on the baseline.
 
-### Mark-to-base
+## Anchor attachment
+
+XXX
+
+### Mark positioning
 
 Anchors can also be used to position "mark" glyphs (such as accents) above "base" glyphs. The anusvara (nasalisation) mark in Devanagari is usually placed above a consonant, but where exactly does it go? It often goes above the descending stroke - but not always:
 
