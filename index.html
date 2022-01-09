@@ -3,27 +3,29 @@ layout: default
 ---
 
 <div class="home">
-
-<i> A free book about font design, Unicode and the computer processing of complex text, by Simon Cozens.</i>
+  <i>
+    A free book about font design, Unicode and the computer processing of
+    complex text, by Simon Cozens.</i
+  >
 
   <ul class="post-list">
-{% for chapter in site.data.chapters %}
-  <li>
-    {% if chapter.some %}
+    {% for chapter in site.data.chapters %}
+    <li>
+      {% if chapter.some %}
       <a href="{{ chapter.fn }}.html">{{ chapter.title }}</a>
-    {% else %}
-      {{ chapter.title }}
-    {% endif %}
-  </li>
-{% endfor %}
-</ul>
+      {% else %} {{ chapter.title }} {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
 
-<h3>Acknowledgements</h3>
+  <h3>Acknowledgements</h3>
 
-<p>
-  Many thanks to contributors and bug finders: Khaled Hosny, Georg Siefert, Peter Constable, and Rob McKaughan.
-</p>
-<p>
-  Thanks also to sponsors and backers: Google Fonts, Jeremy Tribby, Lukas Prokop.
-</p>
+  <p>
+    Many thanks to contributors and bug finders: Khaled Hosny, Georg Siefert,
+    Michael Aars, Peter Constable, and Rob McKaughan.
+  </p>
+  <p>
+    Thanks also to sponsors and backers: Google Fonts, Jeremy Tribby, Lukas
+    Prokop.
+  </p>
 </div>
