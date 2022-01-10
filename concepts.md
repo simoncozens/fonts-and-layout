@@ -23,7 +23,7 @@ They'll also have to make sure they can read the editor's handwriting, checking 
 
 Next, the hand compositor will pick the correct metal sorts for the text that they want to typeset.
 
-![Hand composition, by Wilhei on Wikipedia](concepts/512px-Handsatz.jpg){ width=120pt }
+![Hand composition, by Wilhei on Wikipedia](concepts/512px-Handsatz.jpg){: width="120px" }
 
 They will need to be aware of selecting variants such as small capitals and swash characters. In doing this, they will also *interpret* the text that they are given; they will not simply pick up each letter one at a time, but will consider the desired typographic output. This might mean choosing ligatures (such as a single conjoined "fi" sort in a word with the two letters "f" and "i") and other variant forms when required. At the end of this process, the input text - perhaps a handwritten or typewritten note which represents "what we want to typeset" - will be given concrete instantiation in the actual pieces of metal for printing. When a computer does this selection, we call it *shaping*. On libre systems, this is usually done by [HarfBuzz](https://www.harfbuzz.org/); the Windows equivalent is called [DirectWrite](https://docs.microsoft.com/en-us/windows/win32/directwrite/direct-write-portal) (although this also manages some of the later stages in the process as well).
 
@@ -195,4 +195,4 @@ And of course, another thing that's happened since the 1960s is that computer di
 
 OpenType gives you a range of options for embedding colored and bitmapped images into your fonts: monochrome bitmaps, color bitmaps, color fonts, "Apple-style color fonts", and SVG fonts. These options can be mixed and matched; you can use more than one of these technologies in the same font, to allow for a greater range of application compatibility. For example, at the time of writing, a font with "color font" (COLR) outlines and SVG outlines will have the SVG outlines displayed on Firefox and the COLR outlines displayed on Internet Explorer and Chrome (which do not support SVG). The color bitmap font format (CBDT) is only really used by Google for emoji on Android.
 
-See ["Color Fonts! WTF?"](https://www.colorfonts.wtf) for the latest new on support for color fonts by applications and browsers.
+See ["Color Fonts! WTF?"](https://www.colorfonts.wtf) for the latest news on support for color fonts by applications and browsers.
