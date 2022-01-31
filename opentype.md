@@ -239,7 +239,7 @@ So how should actually we set these values? Unfortunately, there is not a real c
 
 * Bit 7 of `fsSelection` should be turned on.
 
-If you don't like this strategy, there are plenty of others to choose from. The [Glyphs web site](https://www.glyphsapp.com/tutorials/vertical-metrics) describes the strategies used by Adobe, Microsoft and web fonts; [Google fonts](https://github.com/googlefonts/gf-docs/blob/master/VerticalMetricsRecommendations.md) has another. Karsten Lucke has a [guide](https://www.kltf.de/downloads/FontMetrics-kltf.pdf) which goes into all of this in excruciating detail but finally lands on the strategy mentioned above.
+If you don't like this strategy, there are plenty of others to choose from. The [Glyphs web site](https://www.glyphsapp.com/tutorials/vertical-metrics) describes the strategies used by Adobe, Microsoft and web fonts; [Google fonts](https://github.com/googlefonts/gf-docs/tree/main/VerticalMetrics) has another. Karsten Lucke has a [guide](https://www.kltf.de/downloads/FontMetrics-kltf.pdf) which goes into all of this in excruciating detail but finally lands on the strategy mentioned above.
 
 Yes, this is a complete hot mess. Sorry.
 
