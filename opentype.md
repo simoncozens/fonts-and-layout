@@ -239,7 +239,7 @@ So how should actually we set these values? Unfortunately, there is not a real c
 
 * Bit 7 of `fsSelection` should be turned on.
 
-If you don't like this strategy, there are plenty of others to choose from. The [Glyphs web site](https://www.glyphsapp.com/tutorials/vertical-metrics) describes the strategies used by Adobe, Microsoft and web fonts; [Google fonts](https://github.com/googlefonts/gf-docs/tree/main/VerticalMetrics) has another. Karsten Lucke has a [guide](https://www.kltf.de/downloads/FontMetrics-kltf.pdf) which goes into all of this in excruciating detail but finally lands on the strategy mentioned above.
+If you don't like this strategy, there are plenty of others to choose from. The [Glyphs web site](https://www.glyphsapp.com/tutorials/vertical-metrics) describes the strategies used by Adobe, Microsoft and web fonts; [Google fonts](https://github.com/googlefonts/gf-docs/tree/main/VerticalMetrics) has another. Karsten Lucke has a [guide](https://kltf.de/files/FontMetrics-kltf.pdf) which goes into all of this in excruciating detail but finally lands on the strategy mentioned above.
 
 Yes, this is a complete hot mess. Sorry.
 
@@ -639,7 +639,7 @@ Now we come to the `gvar` table, which in a TrueType outline font, stores the de
           ...
         </tuple>
 
-Here are the full deltas for the bottom end of the width axis (completely condensed) and the bottom end of the weight axis (thin). To create a thin version of the letter LO, start with the regular version, and move the first point left 53 units and up 7 units. To create a condensed version, move the first point left 9 units.
+Here are the full deltas for the bottom end of the width axis (completely condensed) and the bottom end of the weight axis (thin). To create a thin version of the letter LO, start with the regular version, and move the first point left 53 units and up 7 units. To create a condensed version, move the first point down 9 units.
 
 If you read on to the next few tuples, you will discover that our initial explanation of deltas was a little bit of a simplification, in a number of ways. First, rather than a single delta for weight, you may have find that a font gets thinner or bolder at different rates. So the delta above tells you how to make the font thin, but making the font bold is not just a matter of inverting the delta. One delta is used to travel from the regular into the light direction, but there's a separate delta used for travelling from the default in the boldness direction:
 

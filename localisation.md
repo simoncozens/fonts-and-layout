@@ -403,19 +403,19 @@ Additionally, the USE's maximal cluster model (which allows us to produce crazy 
 To finish, here is a list of resources which may help you when designing and implementing for global scripts:
 
 * Latin diacritics design:
-  - [The Insects Project](http://theinsectsproject.eu) - a downloadable book on issues of Central European diacritic design
-  - [Problems of Diacritic Design for Latin script text faces](http://gaultney.org/jvgtype/wp-content/uploads/ProbsOfDiacDesignLowRes.pdf)
+  - [The Insects Project](https://theinsectsproject.eu/) - a downloadable book on issues of Central European diacritic design
+  - [Problems of Diacritic Design for Latin script text faces](https://gaultney.org/jvgtype/typedesign/diacritics/ProbsOfDiacDesignLowRes.pdf)
   - [Polish diacritics how-to](http://www.twardoch.com/download/polishhowto/index.html) (Adam Twardoch)
   - Filip Blažek's [Diacritics project](http://diacritics.typo.cz)
-  - [Context of Diacritics](http://www.urtd.net/x/cod/) analyses diacritics by frequency, combination and language
+  - [Context of Diacritics](https://www.setuptype.com/x/cod/) analyses diacritics by frequency, combination and language
 * Danny Trương's [Vietnamese Typography](https://vietnamesetypography.com)
 * Guidance on specific characters:
-  - [thorn and eth](https://sites.google.com/view/briem/design) (Gunnlaugur Briem)
+  - [thorn and eth](https://sites.google.com/view/briem/type-design/thorn-and-eth) (Gunnlaugur Briem)
   - [Tcomma and Tcedilla](https://typedrawers.com/discussion/318/tcomma-and-tcedilla)
   - [German capital sharp s](https://typography.guru/journal/capital-sharp-s-designs/), and [OpenType feature code to support it](https://medium.com/@typefacts/the-german-capital-letter-eszett-e0936c1388f8)
 * Microsoft's script development specifications: [Latin, Cyrillic, Greek](https://docs.microsoft.com/en-gb/typography/script-development/standard); [Arabic](https://docs.microsoft.com/en-gb/typography/script-development/arabic); [Buginese](https://docs.microsoft.com/en-gb/typography/script-development/buginese); [Hangul](https://docs.microsoft.com/en-gb/typography/script-development/hangul); [Hebrew](https://docs.microsoft.com/en-gb/typography/script-development/hebrew); [Bengali](https://docs.microsoft.com/en-gb/typography/script-development/bengali); [Devanagari](https://docs.microsoft.com/en-gb/typography/script-development/devanagari); [Gujarati](https://docs.microsoft.com/en-gb/typography/script-development/gujarati); [Gurmukhi](https://docs.microsoft.com/en-gb/typography/script-development/gurmukhi); [Kannada](https://docs.microsoft.com/en-gb/typography/script-development/kannada); [Malayalam](https://docs.microsoft.com/en-gb/typography/script-development/malayalam); [Oriya](https://docs.microsoft.com/en-gb/typography/script-development/oriya); [Tamil](https://docs.microsoft.com/en-gb/typography/script-development/tamil); [Telugu](https://docs.microsoft.com/en-gb/typography/script-development/telugu); [Javanese](https://docs.microsoft.com/en-gb/typography/script-development/javanese); [Khmer](https://docs.microsoft.com/en-gb/typography/script-development/khmer); [Lao](https://docs.microsoft.com/en-gb/typography/script-development/lao); [Myanmar](https://docs.microsoft.com/en-gb/typography/script-development/myanmar); [Sinhala](https://docs.microsoft.com/en-gb/typography/script-development/sinhala); [Syriac](https://docs.microsoft.com/en-gb/typography/script-development/syriac); [Thaana](https://docs.microsoft.com/en-gb/typography/script-development/thaana); [Thai](https://docs.microsoft.com/en-gb/typography/script-development/thai); [Tibetan](https://docs.microsoft.com/en-gb/typography/script-development/tibetan)
 * Arabic resources:
-  - Jonathan Kew's [Notes on some Unicode Arabic characters: recommendations for usage](https://scripts.sil.org/cms/scripts/render_download.php?format=file&media_id=arabicletterusagenotes&filename=ArabicLetterUsageNotes.pdf)
+  - Jonathan Kew's [Notes on some Unicode Arabic characters: recommendations for usage](https://scripts.sil.org/cms/sites/nrsi/download/arabicletterusagenotes/ArabicLetterUsageNotes.pdf)
   - [Character Requirements for a Nastaliq font](https://scriptsource.org/cms/scripts/page.php?item_id=entry_detail&uid=q5mbdr6h3b)
 * Indic script resources:
   - The Indian Type Foundry has an [annotated feature file](https://github.com/itfoundry/devanagari-shaping/blob/master/features/core/features.fea) for Devanagari.
