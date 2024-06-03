@@ -23,7 +23,7 @@ In this chapter, we're going to begin to look at these instructions, how we get 
 
 OpenType instructions - more usually known as "rules" - are normally written in a language that doesn't exactly have a name; it's known variously as "AFDKO" (from the "Adobe Font Development Kit for OpenType", a set of software tools one of which reads this syntax and adds the rules into binary font files), "Adobe feature language", "fea", or "feature format". Other ways of representing rules are available, (and inside the font they are stored in quite a different representation) but this is the most common way that we can write the rules to program our fonts.
 
-There are a number of alternatives to AFDKO for specifying OpenType layout features - Microsoft's VOLT (Visual OpenType Layout Tool), my own FLUX (Font Layout UX), and High Logic Font creator all allow you to create features and proof and preview them visually. Monotype also has their own internal editor, FontDame, which lays out OpenType features in a text file. (I've also written an alternative syntax called FEE, which allows for extensions and plugins to add higher-level commands to the language.)
+There are a number of alternatives to AFDKO for specifying OpenType layout features - Microsoft's VOLT (Visual OpenType Layout Tool), my own FLUX (Font Layout UX), and High Logic FontCreator all allow you to create features and proof and preview them visually. Monotype also has their own internal editor, FontDame, which lays out OpenType features in a text file. (I've also written an alternative syntax called FEE, which allows for extensions and plugins to add higher-level commands to the language.)
 
 But Adobe's language is the one that almost everyone uses, and as a font engineer, you're going to need to know it very well. So let's begin.
 
@@ -169,7 +169,7 @@ We can manually organise our rules within a feature by placing them within named
         sub uni0662 by uni0662.prop;
         ...
       } pnum_arab;
-    } sups;
+    } pnum;
 
 In fact, I would strongly encourage *always* placing rules inside an explicit `lookup` statement like this, because this helps us to remember the role that lookups play in the shaping process. As we'll see later, that will in turn help us to avoid some rather subtle bugs which are possible when multiple lookups are applied, as well as some problems that can develop from the use of lookup flags.
 
@@ -384,7 +384,7 @@ If you try this in `OTLFiddle` you'll find that this *adds* 200 units of advance
 
 This is a single positioning rule, which applies to *any* matching glyph in the glyph stream. This is not usually what we want - if we wanted to make the `f`s wider, we could have just given them a wider advance width in the editor. (However, single positioning rules do become useful when used in combination with chaining rules, which I promise we will get to soon.)
 
-Another form of the positioning rule can take *two* input glyphs and add value records to one or both of them. Let's now see an example of a *pair positioning* rule where we will look for the glyphs `A B` in the glyph stream, and then change the positioning information of the `B`. I added the following stylistic set features to the test "A B" font from the previous chapter:
+Another form of the positioning rule can take *two* input glyphs and add value records to one or both of them. Let's now see an example of a *pair positioning* rule where we will look for the glyphs `A B` in the glyph stream, and then change the positioning information of the `A`. I added the following stylistic set features to the test "A B" font from the previous chapter:
 
     feature ss01 { pos A B <150 0 0 0>; } ss01 ;
     feature ss02 { pos A B <0 150 0 0>; } ss02 ;
@@ -580,7 +580,7 @@ When we're laying out text, the first thing that happens is that it is separated
 
 Once we've looked up the feature, we're good to go, right? No, not really. To allow the same feature to be shared between languages, the font doesn't store the features directly "under" the language table. Instead, we look up the relevant features in the *feature list table*. Similarly, the features are implemented in terms of a bunch of lookups, which can also be shared between features, so they are stored in the *lookup list table*.
 
-Now we finally have the lookups that we're interested in. Turning on the `liga` feature for the default script and language leads us eventually to lookup table 1, which contains a list of lookup "subtables". Here, the rules that can be applied are grouped by their type. (See the sections "Types of positioning feature" and "types of substitution feature" above.) Our ligature substitutions are lookup type 4.
+Now we finally have the lookups that we're interested in. Turning on the `liga` feature for the default script and language leads us eventually to lookup table 1, which contains a list of lookup "subtables". Here, the rules that can be applied are grouped by their type. (See the sections "Types of positioning feature" and "types of substitution feature" of next chapter.) Our ligature substitutions are lookup type 4.
 
 The actual substitutions are then grouped by their *coverage*, which is another important way of making the process efficient. The shaper has, by this stage, gathered the features that are relevant to a piece of text, and now needs to decide which rules to apply to the incoming text stream. The coverage of each rule tells the shaper whether or not it's likely to be relevant by giving it the first glyph ID in the ligature set. If the shaper sees anything other than the letter "f", then we know for sure that our rules are not going to apply, so it can pass over this set of ligatures and look at the next subtable. A coverage table comes in two formats: it can either specify a *list* of glyphs, as we have here (albeit a list with only one glyph in it), or a *range* of IDs.
 

@@ -319,7 +319,7 @@ XXX Nastaliq
 
 ## Types of Positioning Rule
 
-After all the substitution rules have been processed, we should have the correct sequence of glyphs that we want to lay out. The next job is to run through the lookups in the `GPOS` table in the same way, to adjust the positioning of glyphs. We have seen example of single and pair positioning rules:. We will see in this section that a number of other ways to reposition glyphs are possible.
+After all the substitution rules have been processed, we should have the correct sequence of glyphs that we want to lay out. The next job is to run through the lookups in the `GPOS` table in the same way, to adjust the positioning of glyphs. We have seen example of single and pair positioning rules. We will see in this section that a number of other ways to reposition glyphs are possible.
 
 To be fair, most of these will be generated more easily and effectively by the user interface of your font editor - but not all of them. Let's dive in.
 
@@ -403,7 +403,7 @@ Next, in our `abvm` feature, we will declare how this mark is attached to the ba
       #...
     } abvm;
 
-This says "you can attach any marks in the class `MV_abvm.bindu` to the glyph `dvAA` at position 704,642; on glyph `dvAA`, they should be attached at position 592,642" and so on.
+This says "you can attach any marks in the class `MV_abvm.bindu` to the glyph `dvAA` at position 704,642; on glyph `dvAI`, they should be attached at position 592,642" and so on.
 
 ### Mark-to-ligature
 
